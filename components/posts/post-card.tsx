@@ -44,8 +44,9 @@ export function PostCard({ post }: { post: Post }) {
             __html: post.title?.rendered || "Untitled Post",
           }}
           className="text-xl text-primary font-medium group-hover:underline decoration-muted-foreground underline-offset-4 decoration-dotted transition-all"
+          style={{ fontFamily: 'Host Grotesk, sans-serif' }}
         ></div>
-        <div className="text-sm">
+        <div className="text-sm" style={{ fontFamily: 'Host Grotesk, sans-serif' }}>
           {post.excerpt?.rendered
             ? truncateHtml(post.excerpt.rendered, 12)
             : "No excerpt available"}

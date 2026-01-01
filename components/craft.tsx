@@ -180,7 +180,7 @@ const styles = {
   layout: {
     spacing: "[&>*+*]:mt-6",
     article: "max-w-prose",
-    container: "max-w-5xl mx-auto p-6 sm:p-8",
+    container: "p-2 sm:p-4",
     section: "py-8 md:py-12",
   },
 };
@@ -219,13 +219,13 @@ export const Main = ({ children, className, id }: BaseProps) => (
 );
 
 export const Section = ({ children, className, id }: BaseProps) => (
-  <section className={cn(styles.layout.section, className)} id={id}>
+  <section className={cn("w-full", styles.layout.section, className)} id={id}>
     {children}
   </section>
 );
 
 export const Container = ({ children, className, id }: BaseProps) => (
-  <div className={cn(styles.layout.container, className)} id={id}>
+  <div className={cn("w-full", styles.layout.container, className)} id={id}>
     {children}
   </div>
 );
@@ -239,6 +239,7 @@ export const Article = ({
   <article
     dangerouslySetInnerHTML={dangerouslySetInnerHTML}
     className={cn(
+      "w-full",
       articleTypographyStyles,
       styles.layout.spacing,
       styles.layout.article,
@@ -258,7 +259,7 @@ export const Prose = ({
 }: BaseProps & HTMLProps) => (
   <div
     dangerouslySetInnerHTML={dangerouslySetInnerHTML}
-    className={cn(baseTypographyStyles, styles.layout.spacing, className)}
+    className={cn("w-full", baseTypographyStyles, styles.layout.spacing, className)}
     id={id}
   >
     {children}

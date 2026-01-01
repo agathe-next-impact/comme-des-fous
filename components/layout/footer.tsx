@@ -25,7 +25,7 @@ export function Footer() {
             <p>{siteConfig.site_description}</p>
           </div>
           <div className="flex flex-col gap-2 text-sm">
-            <h5 className="font-medium text-base">Website</h5>
+            <h5 className="font-medium text-base" style={{ fontFamily: 'Host Grotesk, sans-serif' }}>Website</h5>
             {Object.entries(mainMenu).map(([key, href]) => (
               <Link
                 className="hover:underline underline-offset-4"
@@ -37,7 +37,7 @@ export function Footer() {
             ))}
           </div>
           <div className="flex flex-col gap-2 text-sm">
-            <h5 className="font-medium text-base">Blog</h5>
+            <h5 className="font-medium text-base" style={{ fontFamily: 'Host Grotesk, sans-serif' }}>Blog</h5>
             {Object.entries(contentMenu).map(([key, href]) => (
               <Link
                 className="hover:underline underline-offset-4"

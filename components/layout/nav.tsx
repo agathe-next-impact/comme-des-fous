@@ -1,59 +1,39 @@
-import { Button } from "@/components/ui/button";
-import { MobileNav } from "@/components/nav/mobile-nav";
-import { mainMenu } from "@/menu.config";
-import { siteConfig } from "@/site.config";
-import { cn } from "@/lib/utils";
-import Logo from "@/public/logo.svg";
-import Image from "next/image";
-import Link from "next/link";
+"use client";
+import StaggeredMenu from '@/components/ui/staggered-menu';
 
-interface NavProps {
-  className?: string;
-  children?: React.ReactNode;
-  id?: string;
-}
+const menuItems = [
+  { label: 'Home', ariaLabel: 'Go to home page', link: '/' },
+  { label: 'About', ariaLabel: 'Learn about us', link: '/about' },
+  { label: 'Services', ariaLabel: 'View our services', link: '/services' },
+  { label: 'Contact', ariaLabel: 'Get in touch', link: '/contact' }
+];
 
-export function Nav({ className, children, id }: NavProps) {
+const socialItems = [
+  { label: 'Twitter', link: 'https://twitter.com' },
+  { label: 'GitHub', link: 'https://github.com' },
+  { label: 'LinkedIn', link: 'https://linkedin.com' }
+];
+
+const Nav = () => {
   return (
-    <nav
-      className={cn("sticky z-50 top-0 bg-background", "border-b", className)}
-      id={id}
-    >
-      <div
-        id="nav-container"
-        className="max-w-5xl mx-auto py-4 px-6 sm:px-8 flex justify-between items-center"
-      >
-        <Link
-          className="hover:opacity-75 transition-all flex gap-4 items-center"
-          href="/"
-        >
-          <Image
-            src={Logo}
-            alt="Logo"
-            loading="eager"
-            className="dark:invert"
-            width={42}
-            height={26.44}
-          />
-          <h2 className="text-sm">{siteConfig.site_name}</h2>
-        </Link>
-        {children}
-        <div className="flex items-center gap-2">
-          <div className="mx-2 hidden md:flex">
-            {Object.entries(mainMenu).map(([key, href]) => (
-              <Button key={href} asChild variant="ghost" size="sm">
-                <Link href={href}>
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </Link>
-              </Button>
-            ))}
-          </div>
-          <Button asChild className="hidden sm:flex">
-            <Link href="https://github.com/9d8dev/next-wp">Get Started</Link>
-          </Button>
-          <MobileNav />
-        </div>
-      </div>
-    </nav>
+    <div style={{ height: '100vh', background: '#1a1a1a' }}>
+      <StaggeredMenu
+        position="right"
+        items={menuItems}
+        socialItems={socialItems}
+        displaySocials={true}
+        displayItemNumbering={true}
+        menuButtonColor="#fff"
+        openMenuButtonColor="#fff"
+        changeMenuColorOnOpen={true}
+        colors={['#B19EEF', '#5227FF']}
+        logoUrl="/path-to-your-logo.svg"
+        accentColor="#ff6b6b"
+        onMenuOpen={() => console.log('Menu opened')}
+        onMenuClose={() => console.log('Menu closed')}
+      />
+    </div>
   );
-}
+};
+
+export default Nav;
