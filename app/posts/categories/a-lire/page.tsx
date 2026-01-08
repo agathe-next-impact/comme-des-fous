@@ -1,11 +1,13 @@
-import React from "react";
+import Hero from "@/components/hero";
+import { Section, Container } from "@/components/craft";
+
 
 export default function ALireCategoryPage() {
   return (
-    <main className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-4">Articles à lire</h1>
-      {/* Ici, listez les articles de la catégorie a-lire */}
-      <p>Cette page affichera les articles de la catégorie "à lire".</p>
-    </main>
+    <Section className="bg-(--color-red)">
+      <Container>
+        <Hero titre="À LIRE" sousTitre="Sélection d'articles, livres et documents à ne pas manquer" className="text-black"/>
+      </Container>
+    </Section>
   );
 }

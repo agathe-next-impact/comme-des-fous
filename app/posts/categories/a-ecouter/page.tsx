@@ -1,11 +1,12 @@
-import React from "react";
+import Hero from "@/components/hero";
+import { Section, Container } from "@/components/craft";
 
 export default function AEcouterCategoryPage() {
   return (
-    <main className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-4">Articles à écouter</h1>
-      {/* Ici, listez les articles de la catégorie a-ecouter */}
-      <p>Cette page affichera les articles de la catégorie "à écouter".</p>
-    </main>
+    <Section className="bg-(--color-blue)">
+      <Container>
+        <Hero titre="À ÉCOUTER" sousTitre="Sélection de podcasts, musiques et enregistrements audio à ne pas manquer" className="text-black"/>
+      </Container>
+    </Section>
   );
 }

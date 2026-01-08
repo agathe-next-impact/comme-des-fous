@@ -20,9 +20,8 @@ export default function Home() {
 // This is just some example TSX
 const ToDelete = () => {
   return (
-    <main>
-
-      <Hero/>
+    <main className="bg-[var(--bg-main)] text-[var(--text-main)]">
+      <Hero titre="COMME DES FOUS" />
 
       <div className="grid md:grid-cols-3 gap-4 mt-6">
         <Link

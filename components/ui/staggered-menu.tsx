@@ -2,6 +2,7 @@
 
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
+import { usePathname } from "next/navigation";
 
 export interface StaggeredMenuItem {
   label: string;
@@ -31,6 +32,7 @@ export interface StaggeredMenuProps {
   onMenuOpen?: () => void;
   onMenuClose?: () => void;
   isFixed?: boolean;
+  pathname?: string;
 }
 
 export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
@@ -49,7 +51,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   isFixed = false,
   closeOnClickAway = true,
   onMenuOpen,
-  onMenuClose
+  onMenuClose,
 }: StaggeredMenuProps) => {
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
@@ -71,6 +73,21 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const toggleBtnRef = useRef<HTMLButtonElement | null>(null);
   const busyRef = useRef(false);
   const itemEntranceTweenRef = useRef<gsap.core.Tween | null>(null);
+  const pathname = usePathname();
+
+  // Couleur du bouton selon la page
+  let computedMenuButtonColor = menuButtonColor;
+  let computedOpenMenuButtonColor = openMenuButtonColor;
+  const isLight = typeof window !== 'undefined' && document.body.classList.contains('light');
+  if (
+    pathname === "/posts/categories/a-voir" ||
+    pathname === "/posts/categories/a-ecouter" ||
+    pathname === "/posts/categories/a-lire" ||
+    (pathname === "/" && isLight)
+  ) {
+    computedMenuButtonColor = "#000";
+    computedOpenMenuButtonColor = "#000";
+  }
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -91,13 +108,14 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       const offscreen = position === 'left' ? -100 : 100;
       gsap.set([panel, ...preLayers], { xPercent: offscreen });
       gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 });
-      gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 });
+      gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 0, opacity: 0 });
       gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
       gsap.set(textInner, { yPercent: 0 });
-      if (toggleBtnRef.current) gsap.set(toggleBtnRef.current, { color: menuButtonColor });
+      if (toggleBtnRef.current) gsap.set(toggleBtnRef.current, { color: computedMenuButtonColor });
     });
     return () => ctx.revert();
   }, [menuButtonColor, position]);
+  // Ajout des couleurs calculées dans les dépendances
 
   const buildOpenTimeline = useCallback(() => {
     const panel = panelRef.current;
@@ -265,12 +283,23 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
   const animateIcon = useCallback((opening: boolean) => {
     const icon = iconRef.current;
-    if (!icon) return;
+    const plusH = plusHRef.current;
+    const plusV = plusVRef.current;
+    if (!icon || !plusH || !plusV) return;
     spinTweenRef.current?.kill();
+    // Toujours forcer le transformOrigin au centre
+    gsap.set([plusH, plusV, icon], { transformOrigin: '50% 50%' });
     if (opening) {
-      spinTweenRef.current = gsap.to(icon, { rotate: 225, duration: 0.8, ease: 'power4.out', overwrite: 'auto' });
+      spinTweenRef.current = gsap.timeline()
+        .to(plusV, { opacity: 1, duration: 0.15, ease: 'power1.in' }, 0)
+        .to(plusH, { rotate: 45, duration: 0.4, ease: 'power3.out' }, 0)
+        .to(plusV, { rotate: -45, duration: 0.4, ease: 'power3.out' }, 0)
+        .to(icon, { rotate: 90, duration: 0.4, ease: 'power3.out' }, 0);
     } else {
-      spinTweenRef.current = gsap.to(icon, { rotate: 0, duration: 0.35, ease: 'power3.inOut', overwrite: 'auto' });
+      spinTweenRef.current = gsap.timeline()
+        .to([plusH, plusV], { rotate: 0, duration: 0.35, ease: 'power3.inOut' }, 0)
+        .to(plusV, { opacity: 0, duration: 0.15, ease: 'power1.out' }, 0.2)
+        .to(icon, { rotate: 0, duration: 0.35, ease: 'power3.inOut' }, 0);
     }
   }, []);
 
@@ -280,7 +309,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       if (!btn) return;
       colorTweenRef.current?.kill();
       if (changeMenuColorOnOpen) {
-        const targetColor = opening ? openMenuButtonColor : menuButtonColor;
+        const targetColor = opening ? computedOpenMenuButtonColor : computedMenuButtonColor;
         colorTweenRef.current = gsap.to(btn, {
           color: targetColor,
           delay: 0.18,
@@ -288,22 +317,22 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           ease: 'power2.out'
         });
       } else {
-        gsap.set(btn, { color: menuButtonColor });
+        gsap.set(btn, { color: computedMenuButtonColor });
       }
     },
-    [openMenuButtonColor, menuButtonColor, changeMenuColorOnOpen]
+    [computedOpenMenuButtonColor, computedMenuButtonColor, changeMenuColorOnOpen]
   );
 
   React.useEffect(() => {
     if (toggleBtnRef.current) {
       if (changeMenuColorOnOpen) {
-        const targetColor = openRef.current ? openMenuButtonColor : menuButtonColor;
+        const targetColor = openRef.current ? computedOpenMenuButtonColor : computedMenuButtonColor;
         gsap.set(toggleBtnRef.current, { color: targetColor });
       } else {
-        gsap.set(toggleBtnRef.current, { color: menuButtonColor });
+        gsap.set(toggleBtnRef.current, { color: computedMenuButtonColor });
       }
     }
-  }, [changeMenuColorOnOpen, menuButtonColor, openMenuButtonColor]);
+  }, [changeMenuColorOnOpen, computedMenuButtonColor, computedOpenMenuButtonColor]);
 
   const animateText = useCallback((opening: boolean) => {
     const inner = textInnerRef.current;
@@ -399,13 +428,13 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           return arr.map((c, i) => <div key={i} className="sm-prelayer" style={{ background: c }} />);
         })()}
       </div>
-      <header className="staggered-menu-header py-2 px-4" aria-label="Main navigation header">
+      <header className="staggered-menu-header px-4" aria-label="Main navigation header">
         <div className="sm-logo" aria-label="Logo">
-            <span className="font-title text-white text-4xl font-bold">CdF</span>
+            <span className="font-title text-4xl font-bold text-[var(--text-main)]">CdF</span>
         </div>
         <button
           ref={toggleBtnRef}
-          className="sm-toggle"
+          className="sm-toggle text-3xl h-20 min-w-[3rem] min-h-[4rem] flex items-center justify-end"
           aria-label={open ? 'Close MENU' : 'Open MENU'}
           aria-expanded={open}
           aria-controls="staggered-menu-panel"
@@ -422,8 +451,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
             </span>
           </span>
           <span ref={iconRef} className="sm-icon" aria-hidden="true">
-            <span ref={plusHRef} className="sm-icon-line" />
-            <span ref={plusVRef} className="sm-icon-line sm-icon-line-v" />
+            <span ref={plusHRef} className="sm-icon-line scale-[1.7]" />
+            <span ref={plusVRef} className="sm-icon-line sm-icon-line-v scale-[1.7]" />
           </span>
         </button>
       </header>

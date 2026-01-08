@@ -24,7 +24,7 @@ export function Footer() {
             </Link>
             <p>{siteConfig.site_description}</p>
           </div>
-          <div className="flex flex-col gap-2 text-sm">
+          <div className="flex flex-col gap-2 text-sm text-[var(--text-main)]">
             <h5 className="font-medium text-base" style={{ fontFamily: 'Host Grotesk, sans-serif' }}>Website</h5>
             {Object.entries(mainMenu).map(([key, href]) => (
               <Link
@@ -51,7 +51,7 @@ export function Footer() {
         </Container>
         <Container className="border-t not-prose flex flex-col md:flex-row md:gap-2 gap-6 justify-between md:items-center">
           <ThemeToggle />
-          <p className="text-muted-foreground">
+          <p className="text-[var(--text-main)]">
             &copy; <a href="https://9d8.dev">9d8</a>. All rights reserved.
             2025-present.
           </p>
