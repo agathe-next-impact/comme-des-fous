@@ -76,7 +76,10 @@ export default async function Page({
               Published {date} by{" "}
               {author?.name ? (
                 <span>
-                  <a href={`/posts/?author=${author.id}`}>{author.name}</a>{" "}
+                  <a href={`/posts/?author=${author.id}`}>
+                    {/* Affiche domaine et slug uniquement, sans sous-dossier ni slash */}
+                    {`${typeof window !== "undefined" ? window.location.hostname : ""}${author?.slug ? author.slug : author?.id}`}
+                  </a>{" "}
                 </span>
               ) : (
                 <span>Unknown author</span>
@@ -91,7 +94,10 @@ export default async function Page({
                   "no-underline!"
                 )}
               >
-                {category.name}
+                {/* Affiche domaine/slug uniquement */}
+                {/* Affiche domaine + slug uniquement, sans sous-dossier */}
+                {/* Affiche domaine et slug uniquement, sans sous-dossier ni slash */}
+                {`${typeof window !== "undefined" ? window.location.hostname : ""}${category?.slug ? category.slug : category?.id}`}
               </Link>
             )}
           </div>

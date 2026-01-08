@@ -8,6 +8,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 import { siteConfig } from "@/site.config";
 import { cn } from "@/lib/utils";
+import { URLRewriter } from "@/components/url-rewriter";
 
 import type { Metadata } from "next";
 
@@ -47,7 +48,8 @@ export default function RootLayout({
         {/* Host Grotesk et New Astro Soft via Adobe Fonts */}
         <link rel="stylesheet" href="https://use.typekit.net/otn3nyx.css" />
       </head>
-      <body className={cn("min-h-screen font-sans antialiased")}>
+      <body className={cn("min-h-screen font-sans antialiased")}> 
+        <URLRewriter />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
