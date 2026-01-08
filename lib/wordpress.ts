@@ -1,3 +1,4 @@
+
 // Description: WordPress API functions
 // Used to fetch data from a WordPress site using the WordPress REST API
 // Types are imported from `wp.d.ts`
@@ -250,7 +251,10 @@ export async function getCategoryById(id: number): Promise<Category> {
   try {
     return await wordpressFetch<Category>(`/wp-json/wp/v2/categories/${id}`);
   } catch (err: any) {
-    if (err instanceof WordPressAPIError && err.status === 404) {
+    if (
+      err instanceof WordPressAPIError &&
+      (err.status === 404 || err.status === 500)
+    ) {
       return undefined as any;
     }
     throw err;
@@ -338,8 +342,11 @@ export async function getAuthorById(id: number): Promise<Author> {
   try {
     return await wordpressFetch<Author>(`/wp-json/wp/v2/users/${id}`);
   } catch (err: any) {
-    if (err instanceof WordPressAPIError && err.status === 404) {
-      // Return a fallback author object if not found
+    if (
+      err instanceof WordPressAPIError &&
+      (err.status === 404 || err.status === 500)
+    ) {
+      // Return a fallback author object if not found or server error
       return {
         id,
         name: "Unknown author",
@@ -390,22 +397,34 @@ export async function getFeaturedMediaById(id: number): Promise<FeaturedMedia> {
   try {
     return await wordpressFetch<FeaturedMedia>(`/wp-json/wp/v2/media/${id}`);
   } catch (err: any) {
-    if (err instanceof WordPressAPIError && err.status === 404) {
-      // Return a fallback media object if not found
+    if (
+      err instanceof WordPressAPIError &&
+      (err.status === 404 || err.status === 500)
+    ) {
+      // Return a fallback media object if not found or server error
       return {
         id,
-        source_url: "",
+        date: "",
+        date_gmt: "",
+        modified: "",
+        modified_gmt: "",
+        slug: "unknown",
+        status: "publish",
+        link: "",
+        guid: { rendered: "" },
+        title: { rendered: "" },
+        author: 0,
+        caption: { rendered: "" },
         alt_text: "",
         media_type: "image",
         mime_type: "",
-        title: { rendered: "" },
-        caption: { rendered: "" },
-        description: { rendered: "" },
-        media_details: {},
-        post: 0,
-        slug: "unknown",
-        link: "",
-        meta: {},
+        media_details: {
+          width: 0,
+          height: 0,
+          file: "",
+          sizes: {},
+        },
+        source_url: "",
       };
     }
     throw err;
