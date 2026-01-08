@@ -218,7 +218,14 @@ export async function getRecentPosts(filterParams?: {
 }
 
 export async function getPostById(id: number): Promise<Post> {
-  return wordpressFetch<Post>(`/wp-json/wp/v2/posts/${id}`);
+  try {
+    return await wordpressFetch<Post>(`/wp-json/wp/v2/posts/${id}`);
+  } catch (err: any) {
+    if (err instanceof WordPressAPIError && err.status === 404) {
+      return undefined as any;
+    }
+    throw err;
+  }
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | undefined> {
@@ -240,7 +247,14 @@ export async function getAllCategories(): Promise<Category[]> {
 }
 
 export async function getCategoryById(id: number): Promise<Category> {
-  return wordpressFetch<Category>(`/wp-json/wp/v2/categories/${id}`);
+  try {
+    return await wordpressFetch<Category>(`/wp-json/wp/v2/categories/${id}`);
+  } catch (err: any) {
+    if (err instanceof WordPressAPIError && err.status === 404) {
+      return undefined as any;
+    }
+    throw err;
+  }
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category> {
@@ -292,7 +306,14 @@ export async function getAllPages(): Promise<Page[]> {
 }
 
 export async function getPageById(id: number): Promise<Page> {
-  return wordpressFetch<Page>(`/wp-json/wp/v2/pages/${id}`);
+  try {
+    return await wordpressFetch<Page>(`/wp-json/wp/v2/pages/${id}`);
+  } catch (err: any) {
+    if (err instanceof WordPressAPIError && err.status === 404) {
+      return undefined as any;
+    }
+    throw err;
+  }
 }
 
 export async function getPageBySlug(slug: string): Promise<Page | undefined> {
@@ -366,7 +387,29 @@ export async function getPostsByTagSlug(tagSlug: string): Promise<Post[]> {
 }
 
 export async function getFeaturedMediaById(id: number): Promise<FeaturedMedia> {
-  return wordpressFetch<FeaturedMedia>(`/wp-json/wp/v2/media/${id}`);
+  try {
+    return await wordpressFetch<FeaturedMedia>(`/wp-json/wp/v2/media/${id}`);
+  } catch (err: any) {
+    if (err instanceof WordPressAPIError && err.status === 404) {
+      // Return a fallback media object if not found
+      return {
+        id,
+        source_url: "",
+        alt_text: "",
+        media_type: "image",
+        mime_type: "",
+        title: { rendered: "" },
+        caption: { rendered: "" },
+        description: { rendered: "" },
+        media_details: {},
+        post: 0,
+        slug: "unknown",
+        link: "",
+        meta: {},
+      };
+    }
+    throw err;
+  }
 }
 
 export async function searchCategories(query: string): Promise<Category[]> {
