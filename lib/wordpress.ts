@@ -314,7 +314,24 @@ export async function getAllAuthors(): Promise<Author[]> {
 }
 
 export async function getAuthorById(id: number): Promise<Author> {
-  return wordpressFetch<Author>(`/wp-json/wp/v2/users/${id}`);
+  try {
+    return await wordpressFetch<Author>(`/wp-json/wp/v2/users/${id}`);
+  } catch (err: any) {
+    if (err instanceof WordPressAPIError && err.status === 404) {
+      // Return a fallback author object if not found
+      return {
+        id,
+        name: "Unknown author",
+        url: "",
+        description: "",
+        link: "",
+        slug: "unknown",
+        avatar_urls: {},
+        meta: {},
+      };
+    }
+    throw err;
+  }
 }
 
 export async function getAuthorBySlug(slug: string): Promise<Author> {
