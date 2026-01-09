@@ -11,6 +11,12 @@
 body {
   background-color: var(--bg-main);
   color: var(--text-main);
+  overflow-y: scroll !important;
+}
+
+/* Empêcher Radix UI de cacher la scrollbar */
+html {
+  overflow-y: scroll !important;
 }
 
 /* Utilisation dans les composants :
@@ -347,7 +353,7 @@ body {
   margin: 0;
   font-size: 1rem;
   font-weight: 500;
-  color: var(--sm-accent, #ff0000);
+  color: white;
 }
 
 .sm-socials-list {
@@ -374,7 +380,7 @@ body {
 }
 
 .sm-socials-link:focus-visible {
-  outline: 2px solid var(--sm-accent, #ff0000);
+  outline: 2px solid white;
   outline-offset: 3px;
 }
 
@@ -400,7 +406,7 @@ body {
 }
 
 .sm-socials-link:hover {
-  color: var(--sm-accent, #ff0000);
+  color: white;
 }
 
 .sm-panel-title {
@@ -463,7 +469,7 @@ body {
 }
 
 .sm-panel-item:hover {
-  color: var(--sm-accent, #5227ff);
+  color: white;
 }
 
 .sm-panel-list[data-numbering] {
@@ -478,7 +484,7 @@ body {
   right: 2.8em;
   font-size: 18px;
   font-weight: 400;
-  color: var(--sm-accent, #5227ff);
+  color: white;
   letter-spacing: 0;
   pointer-events: none;
   user-select: none;

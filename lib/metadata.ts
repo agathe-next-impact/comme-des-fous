@@ -25,7 +25,7 @@ export function generateContentMetadata({
       title,
       description,
       type: "article",
-      url: `${siteConfig.site_domain}/${basePath}/${slug}`,
+      url: `${siteConfig.site_domain}/${slug}`,
       images: [
         {
           url: ogUrl.toString(),

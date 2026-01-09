@@ -24,7 +24,7 @@ export function SearchInput({ defaultValue }: { defaultValue?: string }) {
     <Input
       type="text"
       name="search"
-      placeholder="Search posts..."
+      placeholder="Rechercher des articles..."
       defaultValue={defaultValue}
       onChange={(e) => handleSearch(e.target.value)}
     />

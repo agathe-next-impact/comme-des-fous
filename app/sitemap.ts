@@ -37,6 +37,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     },
     {
+      url: `${siteConfig.site_domain}/a-ecouter`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${siteConfig.site_domain}/a-lire`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${siteConfig.site_domain}/a-voir`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
       url: `${siteConfig.site_domain}/posts/tags`,
       lastModified: new Date(),
       changeFrequency: "monthly",
@@ -45,10 +63,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const postUrls: MetadataRoute.Sitemap = posts.map((post) => ({
-    url: `${siteConfig.site_domain}/posts/${post.slug}`,
+    url: `${siteConfig.site_domain}/${post.slug}`,
     lastModified: new Date(post.modified),
     changeFrequency: "weekly",
-    priority: 0.5,
+    priority: 0.6,
   }));
 
   return [...staticUrls, ...postUrls];

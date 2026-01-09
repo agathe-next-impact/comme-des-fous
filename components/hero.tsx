@@ -18,7 +18,7 @@ export default function Hero({ titre, sousTitre, className }: HeroProps) {
                     <DecodeFr>{displayTitre}</DecodeFr>
                 </h1>
                 {sousTitre && (
-                <h2 className={`w-full font-title text-2xl ${className}${pathname === "/" ? "text-white" : ""}`}>
+                <h2 className={`w-full text-2xl ${className}${pathname === "/" ? "text-white" : ""}`}>
                     <DecodeFr>{sousTitre}</DecodeFr>
                 </h2>
                 )}

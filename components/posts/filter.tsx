@@ -50,16 +50,17 @@ export function FilterPosts({
   const hasAuthors = authors.length > 0;
 
   return (
-    <div className="grid md:grid-cols-[1fr_1fr_1fr_0.5fr] gap-2 my-4 z-10!">
+    <div className="grid md:grid-cols-[1fr_1fr_0.5fr] gap-6 my-4 z-10!">
       <Select
         value={initialTag || "all"}
         onValueChange={(value) => handleFilterChange("tag", value)}
+        modal={false}
       >
         <SelectTrigger disabled={!hasTags}>
-          {hasTags ? <SelectValue placeholder="All Tags" /> : "No tags found"}
+          {hasTags ? <SelectValue placeholder="Tags" /> : "No tags found"}
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Tags</SelectItem>
+          <SelectItem value="all">Tags</SelectItem>
           {tags.map((tag) => (
             <SelectItem key={tag.id} value={tag.id.toString()}>
               {tag.name}
@@ -71,16 +72,17 @@ export function FilterPosts({
       <Select
         value={initialCategory || "all"}
         onValueChange={(value) => handleFilterChange("category", value)}
+        modal={false}
       >
         <SelectTrigger disabled={!hasCategories}>
           {hasCategories ? (
-            <SelectValue placeholder="All Categories" />
+            <SelectValue placeholder="Categories" />
           ) : (
             "No categories found"
           )}
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Categories</SelectItem>
+          <SelectItem value="all">Categories</SelectItem>
           {categories.map((category) => (
             <SelectItem key={category.id} value={category.id.toString()}>
               {category.name}
@@ -89,19 +91,21 @@ export function FilterPosts({
         </SelectContent>
       </Select>
 
+    {authors.length > 0 && (
       <Select
         value={initialAuthor || "all"}
         onValueChange={(value) => handleFilterChange("author", value)}
+        modal={false}
       >
         <SelectTrigger disabled={!hasAuthors} className="text-center">
           {hasAuthors ? (
-            <SelectValue placeholder="All Authors" />
+            <SelectValue placeholder="Auteurs" />
           ) : (
             "No authors found"
           )}
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Authors</SelectItem>
+        <SelectItem value="all">Auteurs</SelectItem>
           {authors.map((author) => (
             <SelectItem key={author.id} value={author.id.toString()}>
               {author.name}
@@ -109,9 +113,10 @@ export function FilterPosts({
           ))}
         </SelectContent>
       </Select>
+    )}
 
       <Button variant="outline" onClick={handleResetFilters}>
-        Reset Filters
+        Reset des filtres
       </Button>
     </div>
   );

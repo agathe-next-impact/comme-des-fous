@@ -72,7 +72,7 @@ export default async function Page({
   return (
     <>
       <Section>
-      <Hero titre="Tous les Articles test de longueur dqsfq" />
+      <Hero titre="Tout le blog" />
         <Container>
           <div className="space-y-8">
             <FilterPosts
@@ -86,14 +86,14 @@ export default async function Page({
             />
             <SearchInput />
             {posts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {posts.map((post) => (
-                  <PostCard key={post.id} post={post} />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border-l border-t border-white/20">
+                {posts.map((post, index) => (
+                  <PostCard key={post.id} post={post} index={index} />
                 ))}
               </div>
             ) : (
               <div className="h-24 w-full border rounded-lg bg-accent/25 flex items-center justify-center">
-                <p>No posts found</p>
+                <p>Aucun article disponible pour le moment.</p>
               </div>
             )}
 
