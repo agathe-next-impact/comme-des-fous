@@ -1,5 +1,6 @@
 import "./globals.css";
 
+// Suppression de l'import Head, on utilise le composant <head> natif App Router
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { StaggeredMenu } from "@/components/ui/staggered-menu";
 import { Footer } from "@/components/layout/footer";

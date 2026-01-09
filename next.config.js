@@ -2,11 +2,14 @@
 
 const nextConfig = {
   images: {
-    domains: ['commedesfous.com'],
-  },
-  swcMinify: true,
-  experimental: {
-    bundleAnalyzer: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'commedesfous.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
 };
 

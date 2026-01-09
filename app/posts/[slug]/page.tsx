@@ -16,7 +16,9 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 export async function generateStaticParams() {
-  return await getAllPostSlugs();
+  const slugs = await getAllPostSlugs();
+  // Limite à 20 posts maximum
+  return slugs.slice(0, 20);
 }
 
 export async function generateMetadata({
@@ -102,7 +104,7 @@ export default async function Page({
             )}
           </div>
           {featuredMedia?.source_url && (
-            <div className="h-96 my-12 md:h-[500px] overflow-hidden flex items-center justify-center border rounded-lg bg-accent/25">
+            <div className="h-96 my-12 md:h-125 overflow-hidden flex items-center justify-center border rounded-lg bg-accent/25">
               {/* eslint-disable-next-line */}
               <img
                 className="w-full h-full object-cover"

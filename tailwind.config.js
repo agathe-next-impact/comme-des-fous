@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"host-grotesk"', 'Host Grotesk', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['"new-astro"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
     },
   },

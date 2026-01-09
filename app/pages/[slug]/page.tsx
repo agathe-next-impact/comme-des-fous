@@ -10,8 +10,8 @@ export const revalidate = 3600;
 
 export async function generateStaticParams() {
   const pages = await getAllPages();
-
-  return pages.map((page) => ({
+  // Limite à 20 pages maximum
+  return pages.slice(0, 20).map((page) => ({
     slug: page.slug,
   }));
 }

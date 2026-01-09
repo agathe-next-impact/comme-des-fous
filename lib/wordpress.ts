@@ -1,3 +1,24 @@
+/**
+ * Récupère le dernier article sticky (mis en avant) depuis WordPress
+ */
+export async function getLatestStickyPost(): Promise<Post | undefined> {
+  // Essaye de récupérer le dernier sticky
+  const stickyPosts = await wordpressFetchGraceful<Post[]>(
+    "/wp-json/wp/v2/posts",
+    [],
+    { sticky: true, per_page: 1, _embed: true, orderby: "date", order: "desc" },
+    ["wordpress", "posts", "sticky"]
+  );
+  if (stickyPosts.length > 0) return stickyPosts[0];
+  // Sinon, récupère le dernier article publié
+  const latestPosts = await wordpressFetchGraceful<Post[]>(
+    "/wp-json/wp/v2/posts",
+    [],
+    { per_page: 1, _embed: true, orderby: "date", order: "desc" },
+    ["wordpress", "posts", "latest"]
+  );
+  return latestPosts[0];
+}
 
 // Description: WordPress API functions
 // Used to fetch data from a WordPress site using the WordPress REST API
@@ -14,6 +35,12 @@ import type {
 } from "./wordpress.d";
 
 // Single source of truth for WordPress configuration
+// Simple in-memory cache for build-time API calls
+const tempCache: Record<string, any> = {};
+
+function getCacheKey(path: string, query?: Record<string, any>) {
+  return path + (query ? `?${JSON.stringify(query)}` : "");
+}
 const baseUrl = process.env.WORDPRESS_URL;
 const isConfigured = Boolean(baseUrl);
 
@@ -59,12 +86,14 @@ async function wordpressFetch<T>(
   }
 
   const url = `${baseUrl}${path}${query ? `?${querystring.stringify(query)}` : ""}`;
-
+  const cacheKey = getCacheKey(path, query);
+  if (tempCache[cacheKey]) {
+    return tempCache[cacheKey];
+  }
   const response = await fetch(url, {
     headers: { "User-Agent": USER_AGENT },
     next: { tags, revalidate: CACHE_TTL },
   });
-
   if (!response.ok) {
     throw new WordPressAPIError(
       `WordPress API request failed: ${response.statusText}`,
@@ -72,8 +101,9 @@ async function wordpressFetch<T>(
       url
     );
   }
-
-  return response.json();
+  const json = await response.json();
+  tempCache[cacheKey] = json;
+  return json;
 }
 
 // Graceful fetch - returns fallback when WordPress unavailable or on error
@@ -104,12 +134,14 @@ async function wordpressFetchPaginated<T>(
   }
 
   const url = `${baseUrl}${path}${query ? `?${querystring.stringify(query)}` : ""}`;
-
+  const cacheKey = getCacheKey(path, query);
+  if (tempCache[cacheKey]) {
+    return tempCache[cacheKey];
+  }
   const response = await fetch(url, {
     headers: { "User-Agent": USER_AGENT },
     next: { tags, revalidate: CACHE_TTL },
   });
-
   if (!response.ok) {
     throw new WordPressAPIError(
       `WordPress API request failed: ${response.statusText}`,
@@ -117,14 +149,16 @@ async function wordpressFetchPaginated<T>(
       url
     );
   }
-
-  return {
-    data: await response.json(),
+  const json = await response.json();
+  const result = {
+    data: json,
     headers: {
       total: parseInt(response.headers.get("X-WP-Total") || "0", 10),
       totalPages: parseInt(response.headers.get("X-WP-TotalPages") || "0", 10),
     },
   };
+  tempCache[cacheKey] = result;
+  return result;
 }
 
 // Graceful paginated fetch - returns empty response when unavailable

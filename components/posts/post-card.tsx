@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Post } from "@/lib/wordpress.d";
+import { DecodeFr } from "@/components/decode-fr";
 import { cn } from "@/lib/utils";
 import { truncateHtml } from "@/lib/metadata";
 
@@ -39,13 +40,9 @@ export function PostCard({ post }: { post: Post }) {
             </div>
           )}
         </div>
-        <div
-          dangerouslySetInnerHTML={{
-            __html: post.title?.rendered || "Untitled Post",
-          }}
-          className="text-xl text-primary font-medium group-hover:underline decoration-muted-foreground underline-offset-4 decoration-dotted transition-all"
-          style={{ fontFamily: 'Host Grotesk, sans-serif' }}
-        ></div>
+        <h3 className="font-title text-2xl font-bold">
+          <DecodeFr>{post.title.rendered}</DecodeFr>
+        </h3>
         <div className="text-sm" style={{ fontFamily: 'Host Grotesk, sans-serif' }}>
           {post.excerpt?.rendered
             ? truncateHtml(post.excerpt.rendered, 12)
