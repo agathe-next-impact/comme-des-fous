@@ -19,7 +19,7 @@ export default async function Page() {
 
   return (
     <ArchiveList<WPPage>
-        titre="All Pages"
+        title="All Pages"
         items={pages}
         getItemHref={(p) => `/pages/${p.slug}`}
         getItemLabel={(p) => p.title.rendered}
