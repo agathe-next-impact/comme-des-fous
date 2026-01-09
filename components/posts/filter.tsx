@@ -54,7 +54,6 @@ export function FilterPosts({
       <Select
         value={initialTag || "all"}
         onValueChange={(value) => handleFilterChange("tag", value)}
-        modal={false}
       >
         <SelectTrigger disabled={!hasTags}>
           {hasTags ? <SelectValue placeholder="Tags" /> : "No tags found"}
@@ -72,7 +71,6 @@ export function FilterPosts({
       <Select
         value={initialCategory || "all"}
         onValueChange={(value) => handleFilterChange("category", value)}
-        modal={false}
       >
         <SelectTrigger disabled={!hasCategories}>
           {hasCategories ? (
@@ -95,7 +93,6 @@ export function FilterPosts({
       <Select
         value={initialAuthor || "all"}
         onValueChange={(value) => handleFilterChange("author", value)}
-        modal={false}
       >
         <SelectTrigger disabled={!hasAuthors} className="text-center">
           {hasAuthors ? (
