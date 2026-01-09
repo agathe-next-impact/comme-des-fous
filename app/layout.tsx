@@ -15,9 +15,9 @@ import type { Metadata } from "next";
 
 
 export const metadata: Metadata = {
-  title: "WordPress & Next.js Starter by 9d8",
+  title: "Comme des Fous - Changer les regards sur la folie",
   description:
-    "A starter template for Next.js with WordPress as a headless CMS.",
+    "Changer les regards sur la folie",
   metadataBase: new URL(siteConfig.site_domain),
   alternates: {
     canonical: "/",
@@ -68,7 +68,7 @@ export default function RootLayout({
               openMenuButtonColor="#fff"
               changeMenuColorOnOpen={true}
               colors={['#000000', '#000000']}
-              logoUrl="/path-to-your-logo.svg"
+              logoUrl="/path-to-your-logo.png"
               accentColor="#ff6b6b"
             />
           {children}

@@ -6,7 +6,6 @@ import {
   getAllPostSlugs,
 } from "@/lib/wordpress";
 import { generateContentMetadata, stripHtml } from "@/lib/metadata";
-
 import { Section, Container, Article, Prose } from "@/components/craft";
 import { badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -65,58 +64,34 @@ export default async function Page({
   const category = post.categories?.length ? await getCategoryById(post.categories[0]) : undefined;
 
   return (
-    <Section>
-      <Container>
-        <Prose>
-          <h1>
-            <span
-                dangerouslySetInnerHTML={{ __html: post.title.rendered }}
-              ></span>
-          </h1>
-          <div className="flex justify-between items-center gap-4 text-sm mb-4">
-            <h5>
-              Published {date} by{" "}
-              {author?.name ? (
-                <span>
-                  <a href={`/posts/?author=${author.id}`}>
-                    {/* Affiche domaine et slug uniquement, sans sous-dossier ni slash */}
-                    {`${typeof window !== "undefined" ? window.location.hostname : ""}${author?.slug ? author.slug : author?.id}`}
-                  </a>{" "}
-                </span>
-              ) : (
-                <span>Unknown author</span>
-              )}
-            </h5>
-
-            {category?.id && category?.name && (
-              <Link
-                href={`/posts/?category=${category.id}`}
-                className={cn(
-                  badgeVariants({ variant: "outline" }),
-                  "no-underline!"
-                )}
-              >
-                {/* Affiche domaine/slug uniquement */}
-                {/* Affiche domaine + slug uniquement, sans sous-dossier */}
-                {/* Affiche domaine et slug uniquement, sans sous-dossier ni slash */}
-                {`${typeof window !== "undefined" ? window.location.hostname : ""}${category?.slug ? category.slug : category?.id}`}
-              </Link>
-            )}
-          </div>
-          {featuredMedia?.source_url && (
-            <div className="h-96 my-12 md:h-125 overflow-hidden flex items-center justify-center border rounded-lg bg-accent/25">
-              {/* eslint-disable-next-line */}
-              <img
-                className="w-full h-full object-cover"
-                src={featuredMedia.source_url}
-                alt={post.title.rendered}
-              />
-            </div>
-          )}
-        </Prose>
-
-        <Article dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
-      </Container>
-    </Section>
-  );
+          <Section>
+            <Container>
+              <Prose>
+                <h1>
+                  <span
+                      dangerouslySetInnerHTML={{ __html: post.title.rendered }}
+                    ></span>
+                </h1>
+                <div className="flex justify-between items-center gap-4 text-sm mb-4">
+                  <h5>
+                    Published {date} by{" "}
+                    {author?.name ? (
+                      <span>
+                        {author.name}
+                      </span>
+                    ) : (
+                      "Unknown author"
+                    )}
+                  </h5>
+                  {category && (
+                    <span className={badgeVariants({ variant: "outline" })}>
+                      {category.name}
+                    </span>
+                  )}
+                </div>
+                <div dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
+              </Prose>
+            </Container>
+          </Section>
+      );
 }

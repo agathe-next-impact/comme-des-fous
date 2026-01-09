@@ -339,13 +339,13 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     if (!inner) return;
     textCycleAnimRef.current?.kill();
 
-    const currentLabel = opening ? 'MENU' : 'CLOSE';
-    const targetLabel = opening ? 'CLOSE' : 'MENU';
+    const currentLabel = opening ? 'MENU' : '';
+    const targetLabel = opening ? '' : 'MENU';
     const cycles = 3;
     const seq: string[] = [currentLabel];
     let last = currentLabel;
     for (let i = 0; i < cycles; i++) {
-      last = last === 'MENU' ? 'CLOSE' : 'MENU';
+      last = last === 'MENU' ? '' : 'MENU';
       seq.push(last);
     }
     if (last !== targetLabel) seq.push(targetLabel);
@@ -428,13 +428,10 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           return arr.map((c, i) => <div key={i} className="sm-prelayer" style={{ background: c }} />);
         })()}
       </div>
-      <header className="staggered-menu-header px-4" aria-label="Main navigation header">
-        <div className="sm-logo" aria-label="Logo">
-            <span className="font-title text-4xl font-bold text-[var(--text-main)]">CdF</span>
-        </div>
+      <header className="staggered-menu-header pl-4 bg-black" aria-label="Main navigation header">
         <button
           ref={toggleBtnRef}
-          className="sm-toggle text-3xl h-20 min-w-[3rem] min-h-[4rem] flex items-center justify-end"
+          className="sm-toggle md:text-3xl h-18 min-w-[3rem flex items-end justify-end ml-auto text-white"
           aria-label={open ? 'Close MENU' : 'Open MENU'}
           aria-expanded={open}
           aria-controls="staggered-menu-panel"

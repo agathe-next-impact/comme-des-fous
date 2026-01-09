@@ -1,11 +1,8 @@
 // Craft Imports
 import { Section, Container } from "@/components/craft";
 import Hero from "@/components/hero";
-// Next.js Imports
-import Link from "next/link";
 
 // Icons
-import { File, Pen, Tag, Diamond, User, Folder } from "lucide-react";
 import { LastArticleSection } from "@/components/last-article-section";
 import { getLatestStickyPost, getCategoryById, getTagById } from "@/lib/wordpress";
 
@@ -46,10 +43,8 @@ export default async function Home() {
   return (
     <Section>
       <Container>
-        <main className="bg-[var(--bg-main)] text-[var(--text-main)]">
           <Hero titre="COMME DES FOUS" />
           {article && <LastArticleSection article={article} />}
-        </main>
       </Container>
     </Section>
   );

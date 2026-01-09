@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Hero } from "@/components/hero";
 import { Section, Container, Prose } from "@/components/craft";
 import BackButton from "@/components/back";
 
@@ -21,7 +22,7 @@ export function ArchiveList<T extends { id: number | string }>({
     <Section>
       <Container className="space-y-6">
         <Prose className="mb-8">
-          <h2>{title}</h2>
+          <Hero title={title} />
           {items.length > 0 ? (
             <ul className="grid">
               {items.map((item) => (

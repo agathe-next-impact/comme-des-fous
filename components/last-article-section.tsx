@@ -21,7 +21,7 @@ export const LastArticleSection: React.FC<LastArticleSectionProps> = ({ article 
       {/* Left: Infos */}
       <div className="md:w-1/3 flex flex-col justify-between gap-4 py-4 border-y-[1px] border-gray-700">
         <div>
-          <h2 className="font-title text-4xl font-normal mb-2"><DecodeFr>{article.title}</DecodeFr></h2>
+          <h2 className="text-4xl font-normal mb-2"><DecodeFr>{article.title}</DecodeFr></h2>
           <p className="text-base text-muted-foreground mb-4"><DecodeFr>{article.excerpt}</DecodeFr></p>
         </div>
         <div>
@@ -30,7 +30,7 @@ export const LastArticleSection: React.FC<LastArticleSectionProps> = ({ article 
                 <Link
                   key={cat}
                   href={`/posts/categories/${encodeURIComponent(cat.toLowerCase().replace(/\s+/g, '-'))}`}
-                  className="px-2 py-1 text-white text-sm font-medium transition-colors"
+                  className="px-2 py-1 text-(--color-yellow) transition-colors"
                 >
                   {cat}
                 </Link>

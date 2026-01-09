@@ -12,23 +12,24 @@ export default function TopBar() {
                 href="/"
                 className="w-full pl-4 font-regular text-white tracking-tight transition-colors flex items-center h-full"
               >
-                Comme des fous
+                <span className="block md:hidden">CdF</span>
+                <span className="hidden md:block">Comme des fous</span>
               </Link>
               <Link
                 href="/posts/categories/a-lire"
-                className={`w-full py-1 border-l border-white/30 pl-4 font-regular text-white transition-colors flex items-center h-full ${pathname === "/posts/categories/a-lire" ? "bg-[var(--color-red)]" : ""}`}
+                className={`w-full py-1 border-l border-white/30 pl-4 font-regular transition-colors flex items-center h-full ${pathname === "/a-lire" ? "bg-[var(--color-red)] text-black" : " text-white"}`}
               >
                 À lire
               </Link>
               <Link
                 href="/posts/categories/a-ecouter"
-                className={`w-full py-1 border-l border-white/30 pl-4 font-regular text-white transition-colors flex items-center h-full ${pathname === "/posts/categories/a-ecouter" ? "bg-[var(--color-blue)]" : ""}`}
+                className={`w-full py-1 border-l border-white/30 pl-4 font-regulartransition-colors flex items-center h-full ${pathname === "/a-ecouter" ? "bg-[var(--color-blue)] text-black" : " text-white"}`}
               >
                 À écouter
               </Link>
               <Link
                 href="/posts/categories/a-voir"
-                className={`w-full py-1 border-l border-white/30 pl-4 font-regular text-white transition-colors flex items-center h-full ${pathname === "/posts/categories/a-voir" ? "bg-[var(--color-yellow)]" : ""}`}
+                className={`w-full py-1 border-l border-white/30 pl-4 font-regular transition-colors flex items-center h-full ${pathname === "/a-voir" ? "bg-[var(--color-yellow)] text-black" : " text-white"}`}
               >
                 À voir
               </Link>

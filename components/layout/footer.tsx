@@ -2,7 +2,7 @@ import { Section, Container } from "@/components/craft";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { mainMenu, contentMenu } from "@/menu.config";
 import { siteConfig } from "@/site.config";
-import Logo from "@/public/logo.svg";
+import Logo from "@/public/logo.png";
 import Image from "next/image";
 import Link from "next/link";
 
