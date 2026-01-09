@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 
 export interface WPMetadata {
   id: number;
-  title: string;
+  title: { rendered: string } | string;
   date: string;
   author: string;
-  excerpt: string;
+  excerpt: { rendered: string } | string;
   [key: string]: any;
 }
 
@@ -53,8 +53,8 @@ export function WPMetadataFetcher({ endpoint, params, onLoaded }: WPMetadataFetc
       <ul>
         {data.map((item) => (
           <li key={item.id}>
-            <strong>{item.title?.rendered || item.title}</strong> — {item.date} — {item.author}
-            <div dangerouslySetInnerHTML={{ __html: item.excerpt?.rendered || item.excerpt }} />
+            <strong>{typeof item.title === 'object' ? item.title.rendered : item.title}</strong> — {item.date} — {item.author}
+            <div dangerouslySetInnerHTML={{ __html: typeof item.excerpt === 'object' ? item.excerpt.rendered : item.excerpt }} />
           </li>
         ))}
       </ul>

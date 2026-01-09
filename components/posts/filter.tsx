@@ -15,18 +15,20 @@ interface FilterPostsProps {
   authors: Author[];
   tags: Tag[];
   categories: Category[];
-  selectedAuthor?: string;
-  selectedTag?: string;
-  selectedCategory?: string;
+  initialAuthor?: string;
+  initialTag?: string;
+  initialCategory?: string;
+  initialSearch?: string;
 }
 
 export function FilterPosts({
   authors,
   tags,
   categories,
-  selectedAuthor,
-  selectedTag,
-  selectedCategory,
+  initialAuthor,
+  initialTag,
+  initialCategory,
+  initialSearch,
 }: FilterPostsProps) {
   const router = useRouter();
 
@@ -50,7 +52,7 @@ export function FilterPosts({
   return (
     <div className="grid md:grid-cols-[1fr_1fr_1fr_0.5fr] gap-2 my-4 z-10!">
       <Select
-        value={selectedTag || "all"}
+        value={initialTag || "all"}
         onValueChange={(value) => handleFilterChange("tag", value)}
       >
         <SelectTrigger disabled={!hasTags}>
@@ -67,7 +69,7 @@ export function FilterPosts({
       </Select>
 
       <Select
-        value={selectedCategory || "all"}
+        value={initialCategory || "all"}
         onValueChange={(value) => handleFilterChange("category", value)}
       >
         <SelectTrigger disabled={!hasCategories}>
@@ -88,7 +90,7 @@ export function FilterPosts({
       </Select>
 
       <Select
-        value={selectedAuthor || "all"}
+        value={initialAuthor || "all"}
         onValueChange={(value) => handleFilterChange("author", value)}
       >
         <SelectTrigger disabled={!hasAuthors} className="text-center">
