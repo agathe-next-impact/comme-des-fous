@@ -315,7 +315,17 @@ export async function getAllTags(): Promise<Tag[]> {
 }
 
 export async function getTagById(id: number): Promise<Tag> {
-  return wordpressFetch<Tag>(`/wp-json/wp/v2/tags/${id}`);
+  try {
+    return await wordpressFetch<Tag>(`/wp-json/wp/v2/tags/${id}`);
+  } catch (err: any) {
+    if (
+      err instanceof WordPressAPIError &&
+      (err.status === 404 || err.status === 500)
+    ) {
+      return undefined as any;
+    }
+    throw err;
+  }
 }
 
 export async function getTagBySlug(slug: string): Promise<Tag | undefined> {
@@ -418,6 +428,9 @@ export async function getPostsByCategorySlug(
 
 export async function getPostsByTagSlug(tagSlug: string): Promise<Post[]> {
   const tag = await getTagBySlug(tagSlug);
+  if (!tag) {
+    throw new Error(`Tag not found for slug: ${tagSlug}`);
+  }
   return wordpressFetch<Post[]>("/wp-json/wp/v2/posts", { tags: tag.id });
 }
 

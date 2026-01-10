@@ -67,7 +67,7 @@ export default async function Page({
   
   // Récupérer tous les tags du post
   const tags = post.tags?.length 
-    ? await Promise.all(post.tags.map(tagId => getTagById(tagId)))
+    ? (await Promise.all(post.tags.map(tagId => getTagById(tagId)))).filter(Boolean)
     : [];
 
   // Scraper les médias embarqués depuis la page publique WordPress
