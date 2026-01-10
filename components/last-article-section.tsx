@@ -30,7 +30,7 @@ export const LastArticleSection: React.FC<LastArticleSectionProps> = ({ article 
                 <Link
                   key={cat}
                   href={`/posts/categories/${encodeURIComponent(cat.toLowerCase().replace(/\s+/g, '-'))}`}
-                  className="px-2 py-1 text-(--color-yellow) transition-colors"
+                  className="text-xs text-(--color-red) mb-4 px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
                 >
                   {cat}
                 </Link>
@@ -41,7 +41,7 @@ export const LastArticleSection: React.FC<LastArticleSectionProps> = ({ article 
                 <Link
                   key={tag}
                   href={`/posts/tags/${encodeURIComponent(tag.toLowerCase().replace(/\s+/g, '-'))}`}
-                  className="text-(--color-red) px-2 py-1 transition-colors"
+                  className="text-xs text-(--color-yellow) px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
                 >
                   #{tag}
                 </Link>

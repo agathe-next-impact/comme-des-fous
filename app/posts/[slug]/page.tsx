@@ -3,16 +3,18 @@ import {
   getFeaturedMediaById,
   getAuthorById,
   getCategoryById,
+  getTagById,
   getAllPostSlugs,
+  scrapePostEmbeddedMedia,
 } from "@/lib/wordpress";
 import { generateContentMetadata, stripHtml } from "@/lib/metadata";
 import { Section, Container, Article, Prose } from "@/components/craft";
 import { badgeVariants } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { PostContent } from "@/components/posts/post-content";
 
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import Hero from "@/components/hero";
 
 export async function generateStaticParams() {
   const slugs = await getAllPostSlugs();
@@ -56,41 +58,68 @@ export default async function Page({
     ? await getFeaturedMediaById(post.featured_media)
     : null;
   const author = await getAuthorById(post.author);
-  const date = new Date(post.date).toLocaleDateString("en-US", {
+  const date = new Date(post.date).toLocaleDateString("fr-FR", {
     month: "long",
     day: "numeric",
     year: "numeric",
   });
   const category = post.categories?.length ? await getCategoryById(post.categories[0]) : undefined;
+  
+  // Récupérer tous les tags du post
+  const tags = post.tags?.length 
+    ? await Promise.all(post.tags.map(tagId => getTagById(tagId)))
+    : [];
+
+  // Scraper les médias embarqués depuis la page publique WordPress
+  const scrapedMedia = await scrapePostEmbeddedMedia(post.link);
 
   return (
-          <Section>
-            <Container>
-              <Prose>
-                <h1>
-                  <span
-                      dangerouslySetInnerHTML={{ __html: post.title.rendered }}
-                    ></span>
-                </h1>
+    <Section>
+      <Container>
+        <Hero
+          titre={post.title.rendered}
+          sousTitre=""
+        />
+      </Container>
+
+          <Container className="mt-8">
+
                 <div className="flex justify-between items-center gap-4 text-sm mb-4">
                   <h5>
-                    Published {date} by{" "}
+                    Publié {date} par{" "}
                     {author?.name ? (
                       <span>
                         {author.name}
                       </span>
                     ) : (
-                      "Unknown author"
+                      "Anonyme"
                     )}
                   </h5>
-                  {category && (
-                    <span className={badgeVariants({ variant: "outline" })}>
-                      {category.name}
-                    </span>
-                  )}
+                  <div className="flex gap-2 items-center">
+                    {category && (
+                      <span className="text-xs text-(--color-red) px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+                        {category.name}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
-              </Prose>
+                
+                {tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {tags.map((tag) => (
+                      <a 
+                        key={tag.id}
+                        href={`/${tag.slug}`}
+                        className="text-xs text-(--color-yellow) px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                      >
+                        {tag.name}
+                      </a>
+                    ))}
+                  </div>
+                )}
+                
+                <PostContent content={post.content.rendered} scrapedMedia={scrapedMedia} />
+
             </Container>
           </Section>
       );

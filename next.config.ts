@@ -63,14 +63,6 @@ const nextConfig: NextConfig = {
 
     return redirectsList;
   },
-  async rewrites() {
-    return [
-      {
-        source: "/:slug",
-        destination: "/posts/:slug",
-      },
-    ];
-  },
 };
 
 export default nextConfig;

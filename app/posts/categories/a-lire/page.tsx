@@ -25,12 +25,6 @@ export default async function ALireCategoryPage({
   // Vérifier que la catégorie existe
   const category = await getCategoryBySlug("a-lire");
   
-  console.log("Category Debug:", { 
-    slug: "a-lire", 
-    id: category?.id, 
-    page 
-  });
-  
   return (
     <Section>
       <Container className="bg-(--color-red)">

@@ -24,12 +24,7 @@ export default async function AVoirCategoryPage({
   
   // Vérifier que la catégorie existe
   const category = await getCategoryBySlug("a-voir");
-  
-  console.log("Category Debug:", { 
-    slug: "a-voir", 
-    id: category?.id, 
-    page 
-  });
+
   
   return (
     <Section>

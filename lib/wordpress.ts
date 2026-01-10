@@ -86,10 +86,6 @@ async function wordpressFetch<T>(
   }
 
   const url = `${baseUrl}${path}${query ? `?${querystring.stringify(query)}` : ""}`;
-  const cacheKey = getCacheKey(path, query);
-  if (tempCache[cacheKey]) {
-    return tempCache[cacheKey];
-  }
   const response = await fetch(url, {
     headers: { "User-Agent": USER_AGENT },
     next: { tags, revalidate: CACHE_TTL },
@@ -102,7 +98,6 @@ async function wordpressFetch<T>(
     );
   }
   const json = await response.json();
-  tempCache[cacheKey] = json;
   return json;
 }
 
@@ -134,10 +129,6 @@ async function wordpressFetchPaginated<T>(
   }
 
   const url = `${baseUrl}${path}${query ? `?${querystring.stringify(query)}` : ""}`;
-  const cacheKey = getCacheKey(path, query);
-  if (tempCache[cacheKey]) {
-    return tempCache[cacheKey];
-  }
   const response = await fetch(url, {
     headers: { "User-Agent": USER_AGENT },
     next: { tags, revalidate: CACHE_TTL },
@@ -157,7 +148,6 @@ async function wordpressFetchPaginated<T>(
       totalPages: parseInt(response.headers.get("X-WP-TotalPages") || "0", 10),
     },
   };
-  tempCache[cacheKey] = result;
   return result;
 }
 
@@ -328,10 +318,14 @@ export async function getTagById(id: number): Promise<Tag> {
   return wordpressFetch<Tag>(`/wp-json/wp/v2/tags/${id}`);
 }
 
-export async function getTagBySlug(slug: string): Promise<Tag> {
-  return wordpressFetch<Tag[]>("/wp-json/wp/v2/tags", { slug }).then(
-    (tags) => tags[0]
+export async function getTagBySlug(slug: string): Promise<Tag | undefined> {
+  const tags = await wordpressFetchGraceful<Tag[]>(
+    "/wp-json/wp/v2/tags",
+    [],
+    { slug },
+    ["wordpress", "tags", `tag-slug-${slug}`]
   );
+  return tags[0];
 }
 
 export async function getAllPages(): Promise<Page[]> {
@@ -588,6 +582,146 @@ export async function getPostsByAuthorPaginated(
     page,
     author: authorId,
   });
+}
+
+// Podcast platforms detection
+const PODCAST_PLATFORMS = [
+  'spotify.com', 'open.spotify.com', 'soundcloud.com', 'podcasts.apple.com',
+  'anchor.fm', 'podbean.com', 'acast.com', 'deezer.com', 'ausha.co',
+  'audioboom.com', 'megaphone.fm', 'simplecast.com', 'buzzsprout.com',
+  'spreaker.com', 'castbox.fm', 'player.fm', 'stitcher.com', 'podcloud.fr',
+  'radiofrance.fr',
+];
+
+const VIDEO_PLATFORMS = ['youtube.com', 'youtu.be', 'vimeo.com', 'dailymotion.com'];
+
+function getMediaType(url: string): 'video' | 'podcast' | null {
+  const lowerUrl = url.toLowerCase();
+  if (VIDEO_PLATFORMS.some(p => lowerUrl.includes(p))) return 'video';
+  if (PODCAST_PLATFORMS.some(p => lowerUrl.includes(p))) return 'podcast';
+  return null;
+}
+
+/**
+ * Scrape la page publique WordPress pour récupérer les iframes vidéo et podcast
+ * qui ne sont pas disponibles via l'API REST
+ */
+export async function scrapePostEmbeddedMedia(postUrl: string): Promise<{ src: string; title?: string; type?: 'video' | 'podcast' }[]> {
+  try {
+    const response = await fetch(postUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; NextJS/14)',
+      },
+      next: { revalidate: 3600 }
+    });
+
+    if (!response.ok) return [];
+
+    const html = await response.text();
+    const media: { src: string; title?: string; type?: 'video' | 'podcast' }[] = [];
+
+    // Extract ALL iframes - universal approach
+    const iframeRegex = /<iframe[^>]*>/gi;
+    const iframes = html.match(iframeRegex) || [];
+    
+    console.log(`[Scrape] Found ${iframes.length} iframes in ${postUrl}`);
+
+    for (const iframe of iframes) {
+      // Extract src attribute
+      const srcMatch = iframe.match(/src=["']([^"']+)["']/i);
+      if (!srcMatch) continue;
+
+
+      let src = srcMatch[1]
+        .replace(/&amp;/g, '&')
+        .replace(/&#038;/g, '&');
+
+      // Correction Mixcloud: paramètre feed relatif → absolu
+      if (src.includes('mixcloud.com/widget/iframe') && src.includes('feed=')) {
+        // Récupère le paramètre feed
+        const feedMatch = src.match(/feed=([^&]+)/);
+        if (feedMatch) {
+          let feedValue = decodeURIComponent(feedMatch[1]);
+          if (feedValue.startsWith('/')) {
+            // Transforme en URL absolue
+            feedValue = `https://www.mixcloud.com${feedValue}`;
+            // Reconstruit l'URL src
+            src = src.replace(/feed=([^&]+)/, `feed=${encodeURIComponent(feedValue)}`);
+          }
+        }
+      }
+
+      // Skip empty or invalid sources
+      if (!src || src.startsWith('about:') || src.startsWith('javascript:')) continue;
+
+      // Vérifie si le src retourne une 404
+      let is404 = false;
+      try {
+        const headResp = await fetch(src, { method: 'HEAD' });
+        if (!headResp.ok && headResp.status === 404) {
+          is404 = true;
+        }
+      } catch (err) {
+        is404 = true;
+      }
+      if (is404) {
+        console.log(`[Scrape] Ignored iframe (404): ${src}`);
+        continue;
+      }
+
+      // Extract title if present
+      const titleMatch = iframe.match(/title=["']([^"']+)["']/i);
+      const title = titleMatch ? titleMatch[1].replace(/&quot;/g, '"') : undefined;
+
+
+      // Détection robuste du type pour Mixcloud
+      let type: 'video' | 'podcast';
+      if (src.includes('mixcloud.com/widget/iframe')) {
+        type = 'podcast';
+      } else {
+        const isVideo = /youtube|youtu\.be|vimeo|dailymotion|wistia|twitch/i.test(src);
+        type = isVideo ? 'video' : 'podcast';
+      }
+
+      // Avoid duplicates
+      if (!media.some(m => m.src === src)) {
+        console.log(`[Scrape] Found iframe: ${src} (${type})`);
+        media.push({ src, title, type });
+      }
+    }
+
+    // Also extract <audio> tags
+    const audioRegex = /<audio[^>]*src=["']([^"']+)["'][^>]*>/gi;
+    let audioMatch;
+    while ((audioMatch = audioRegex.exec(html)) !== null) {
+      const src = audioMatch[1].replace(/&amp;/g, '&');
+      if (!media.some(m => m.src === src)) {
+        media.push({ src, type: 'podcast' });
+      }
+    }
+
+    // Détection des liens directs vers les plateformes de podcasts
+    const linkRegex = /<a\s[^>]*href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi;
+    let linkMatch;
+    while ((linkMatch = linkRegex.exec(html)) !== null) {
+      let url = linkMatch[1];
+      const text = linkMatch[2];
+      // Transformation automatique pour Mixcloud
+      if (url.includes('mixcloud.com') && !url.includes('widget/iframe')) {
+        // Nettoie l'URL (enlève les paramètres éventuels)
+        const baseUrl = url.split('?')[0];
+        url = `https://www.mixcloud.com/widget/iframe/?feed=${encodeURIComponent(baseUrl)}`;
+      }
+      if (getMediaType(url) === 'podcast' && !media.some(m => m.src === url)) {
+        media.push({ src: url, title: text, type: 'podcast' });
+      }
+    }
+
+    return media;
+  } catch (error) {
+    console.error(`[Scrape] Error scraping ${postUrl}:`, error);
+    return [];
+  }
 }
 
 export { WordPressAPIError };

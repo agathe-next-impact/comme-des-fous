@@ -25,12 +25,7 @@ export default async function AEcouterCategoryPage({
   
   // Vérifier que la catégorie existe
   const category = await getCategoryBySlug("a-ecouter");
-  
-  console.log("Category Debug:", { 
-    slug: "a-ecouter", 
-    id: category?.id, 
-    page 
-  });
+
   
   return (
     <Section>

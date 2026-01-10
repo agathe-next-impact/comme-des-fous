@@ -72,7 +72,7 @@ export default async function Page({
   return (
     <>
       <Section>
-      <Hero titre="Tout le blog" />
+      <Hero titre="CdF" />
         <Container>
           <div className="space-y-8">
             <FilterPosts

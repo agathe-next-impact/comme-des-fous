@@ -10,12 +10,11 @@ interface HeroProps {
 
 export default function Hero({ titre, sousTitre, className }: HeroProps) {
   const pathname = usePathname();
-  const displayTitre = titre.length > 32 ? titre.substring(0, 32) + "..." : titre;
-  const textSize = titre.length > 23 ? "text-[6vw]" : titre.length > 19 ? "text-[8vw]" : titre.length > 15 ? "text-[10vw]" : "text-[12.5vw]";
+  const textSize = titre.length > 30 ? "text-[4vw]" : titre.length > 23 ? "text-[6vw]" : titre.length > 19 ? "text-[8vw]" : titre.length > 15 ? "text-[10vw]" : "text-[12.5vw]";
     return (
         <div>
-                <h1 className={`w-full max-w-[100vw] pt-12 md:pt-0 font-title font-bold ${textSize} uppercase tracking-tight ${className}${pathname === "/" ? "text-white" : ""}`}>
-                    <DecodeFr>{displayTitre}</DecodeFr>
+                <h1 className={`w-full max-w-[100vw] mt-10 pt-16 md:pt-0 font-title font-bold ${textSize} uppercase tracking-tight ${className}${pathname === "/" ? "text-white" : ""}`}>
+                    <DecodeFr>{titre}</DecodeFr>
                 </h1>
                 {sousTitre && (
                 <h2 className={`w-full text-2xl ${className}${pathname === "/" ? "text-white" : ""}`}>
