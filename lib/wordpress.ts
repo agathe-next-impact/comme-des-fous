@@ -1,4 +1,18 @@
 /**
+ * Récupère les N posts les plus commentés (par défaut 10)
+ */
+/**
+ * Récupère les N posts les plus commentés (tri côté front, fallback si l'API ne supporte pas orderby=comment_count)
+ */
+export async function getMostCommentedPosts(limit: number = 10): Promise<Post[]> {
+  // On récupère jusqu'à 100 posts récents et on trie côté front
+  const posts = await getRecentPosts();
+  return posts
+    .slice() // copie pour ne pas muter l'original
+    .sort((a, b) => (b.comment_count ?? 0) - (a.comment_count ?? 0))
+    .slice(0, limit);
+}
+/**
  * Récupère le dernier article sticky (mis en avant) depuis WordPress
  */
 export async function getLatestStickyPost(): Promise<Post | undefined> {

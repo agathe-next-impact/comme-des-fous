@@ -185,7 +185,7 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
 
     // Images
     container.querySelectorAll("img").forEach((img) => {
-      img.classList.add("rounded-lg", "my-4", "w-full", "h-auto");
+      img.classList.add("my-4", "w-full", "h-auto");
       if (img.parentElement?.tagName !== "FIGURE") {
         const figure = document.createElement("figure");
         figure.className = "my-8";
@@ -250,36 +250,37 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
 
     // Code
     container.querySelectorAll("pre").forEach((pre) => {
-      pre.classList.add("bg-muted", "rounded-lg", "p-4", "my-4", "overflow-x-auto", "text-sm");
+      pre.classList.add("bg-muted", "p-4", "my-4", "overflow-x-auto", "text-sm");
     });
 
     container.querySelectorAll("code").forEach((code) => {
       if (code.parentElement?.tagName !== "PRE") {
-        code.classList.add("bg-muted", "px-2", "py-1", "rounded", "text-sm", "font-mono");
+        code.classList.add("bg-muted", "px-2", "py-1", "text-sm", "font-mono");
       }
     });
   }, [isProcessed, cleanedContent]);
 
   return (
     <>
+      <div className="max-w-4xl mx-auto mt-12 border-t border-white/20 pt-8" />
       {/* Contenu principal */}
       <div
         ref={contentRef}
         className={cn(
-          "max-w-4xl mt-12 mx-auto p-8 rounded-lg bg-white/20",
+          "max-w-4xl mx-auto p-8 bg-white/80",
           "prose prose-lg dark:prose-invert",
           "prose-headings:font-bold prose-headings:tracking-tight prose-headings:mt-12 prose-headings:mb-6 prose-headings:leading-tight",
-          "prose-p:text-foreground prose-p:mb-6",
+          "prose-p:text-black prose-p:mb-6",
           "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
-          "prose-strong:font-bold prose-strong:text-foreground",
+          "prose-strong:font-bold prose-strong:text-black",
           "prose-code:text-primary prose-code:before:content-none prose-code:after:content-none",
-          "prose-pre:bg-muted prose-pre:text-foreground",
-          "prose-blockquote:border-primary prose-blockquote:text-muted-foreground prose-blockquote:my-8",
-          "prose-img:rounded-lg prose-img:shadow-lg prose-img:my-8",
+          "prose-pre:bg-muted prose-pre:text-black",
+          "prose-blockquote:border-primary prose-blockquote:text-black prose-blockquote:my-8",
+          "prose-img:shadow-lg prose-img:my-8",
           "prose-ul:my-6 prose-ol:my-6",
           className
         )}
-        style={{ lineHeight: "2.2" }}
+        style={{ lineHeight: "2.2", color: "#000" }}
         dangerouslySetInnerHTML={{ __html: cleanedContent }}
       />
 
@@ -293,7 +294,7 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
                 key={index}
                 className={cn(
                   "relative p-6 group flex flex-col not-prose",
-                  "border border-white/20 rounded-lg",
+                  "border border-white/20",
                   "hover:bg-white/5 transition-all duration-300",
                   "before:absolute before:top-0 before:left-0 before:w-3 before:h-3",
                   "before:border-t-2 before:border-l-2 before:border-yellow-500",
@@ -310,7 +311,7 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
                   <iframe
                     src={item.src}
                     title={item.title || `${item.type === 'podcast' ? 'Podcast' : 'Vidéo'} ${index + 1}`}
-                    className="absolute inset-0 w-full h-full rounded-lg"
+                    className="absolute inset-0 w-full h-full"
                     allow={item.type === 'podcast' 
                       ? "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                       : "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

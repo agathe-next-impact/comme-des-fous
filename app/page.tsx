@@ -4,6 +4,7 @@ import Hero from "@/components/hero";
 
 // Icons
 import { LastArticleSection } from "@/components/last-article-section";
+import { MostReadPostsList } from "@/components/posts/most-read-posts-list";
 import { getLatestStickyPost, getCategoryById, getTagById } from "@/lib/wordpress";
 
 
@@ -45,6 +46,7 @@ export default async function Home() {
       <Container>
           <Hero titre="COMME DES FOUS" />
           {article && <LastArticleSection article={article} />}
+          <MostReadPostsList />
       </Container>
     </Section>
   );

@@ -84,7 +84,7 @@ export default async function Page({
 
           <Container className="mt-8">
 
-                <div className="flex justify-between items-center gap-4 text-sm mb-4">
+                <div className="flex justify-between items-center gap-4 text-sm mb-4 pb-4">
                   <h5>
                     Publié {date} par{" "}
                     {author?.name ? (
@@ -105,12 +105,12 @@ export default async function Page({
                 </div>
                 
                 {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap gap-2 mb-4 pb-4">
                     {tags.map((tag) => (
                       <a 
                         key={tag.id}
                         href={`/${tag.slug}`}
-                        className="text-xs text-(--color-yellow) px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                        className="text-xs text-(--color-yellow) px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors border-b-grey-500"
                       >
                         {tag.name}
                       </a>

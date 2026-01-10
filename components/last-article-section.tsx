@@ -21,7 +21,9 @@ export const LastArticleSection: React.FC<LastArticleSectionProps> = ({ article 
       {/* Left: Infos */}
       <div className="md:w-1/3 flex flex-col justify-between gap-4 py-4 border-y-[1px] border-red-500">
         <div>
-          <h2 className="text-4xl font-normal mb-2"><DecodeFr>{article.title}</DecodeFr></h2>
+          <Link href={article.link} className="hover:underline">
+            <h2 className="text-4xl font-normal mb-2"><DecodeFr>{article.title}</DecodeFr></h2>
+          </Link>
           <p className="text-base text-muted-foreground mb-4"><DecodeFr>{article.excerpt}</DecodeFr></p>
         </div>
         <div>
