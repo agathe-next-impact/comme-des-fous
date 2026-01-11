@@ -30,6 +30,32 @@ export function FilterPosts({
   initialCategory,
   initialSearch,
 }: FilterPostsProps) {
+  // Affichage du ou des filtres sélectionnés
+  let selectedFilters: string[] = [];
+  if (initialCategory && categories.length > 0) {
+    const catObj = categories.find(
+      (c) =>
+        c.id.toString() === initialCategory ||
+        c.slug === initialCategory
+    );
+    if (catObj) selectedFilters.push(catObj.name);
+  }
+  if (initialTag && tags.length > 0) {
+    const tagObj = tags.find(
+      (t) =>
+        t.id.toString() === initialTag ||
+        t.slug === initialTag
+    );
+    if (tagObj) selectedFilters.push(tagObj.name);
+  }
+  if (initialAuthor && authors.length > 0) {
+    const authorObj = authors.find(
+      (a) =>
+        a.id.toString() === initialAuthor ||
+        a.slug === initialAuthor
+    );
+    if (authorObj) selectedFilters.push(authorObj.name);
+  }
   const router = useRouter();
 
   const handleFilterChange = (type: string, value: string) => {
@@ -50,7 +76,13 @@ export function FilterPosts({
   const hasAuthors = authors.length > 0;
 
   return (
-    <div className="grid md:grid-cols-[1fr_1fr_0.5fr] gap-6 my-4 z-10!">
+    <>
+      {selectedFilters.length > 0 && (
+        <div className="mb-2 text-4xl font-title font-normal bg-[var(--bg-main)] text-[var(--text-main)]">
+          {selectedFilters.join(" | ")}
+        </div>
+      )}
+      <div className="grid md:grid-cols-[1fr_1fr_1fr_0.5fr] gap-6 my-4 z-10!">
       <Select
         value={initialTag || "all"}
         onValueChange={(value) => handleFilterChange("tag", value)}
@@ -116,5 +148,6 @@ export function FilterPosts({
         Reset des filtres
       </Button>
     </div>
+    </>
   );
 }

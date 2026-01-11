@@ -15,7 +15,7 @@ export function ThemeToggle() {
 
   return (
     <Button
-      variant="outline"
+      variant="default"
       size="icon"
       onClick={handleClick}
       aria-label="Toggle theme"

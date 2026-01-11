@@ -53,6 +53,7 @@ export interface FeaturedMedia extends WPEntity {
 
 // Content types
 export interface Post extends WPEntity {
+  comment_count?: number;
   title: RenderedTitle;
   content: RenderedContent;
   excerpt: RenderedContent;

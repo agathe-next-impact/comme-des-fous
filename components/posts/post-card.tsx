@@ -137,6 +137,11 @@ export function PostCard({
     }
   }, [post, scrapedMedia, media]);
 
+  // Extract author name from embedded data
+  const author =
+    post._embedded?.author?.[0]?.name ||
+    (typeof post.author === "string" ? post.author : "Inconnu");
+
   // Scrape media from public WordPress page
   const scrapeMediaFromPost = async () => {
     try {
@@ -254,18 +259,18 @@ export function PostCard({
       </div>
 
       <div className="flex flex-col gap-4 border-t border-t-white/30 pt-4">
-        <div className="flex justify-between items-center text-xs text-(--color-red) px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
-          <p>
+        <div className="flex justify-between items-center text-sm">
+          <p className="text-(--color-red) px-2 py-1 rounded-full hover:text-white hover:bg-(--color-red) border border-(--color-red) transition-colors">
             <DecodeFr>{category?.name || "Uncategorized"}</DecodeFr>
           </p>
-          <p className="text-(--color-blue)">{date}</p>
+          <p className="text-sm">{author} - {date}</p>
         </div>
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {tags.slice(0, 3).map((tag: any) => (
               <span
                 key={tag.id}
-                className="text-xs text-(--color-yellow) px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                className="text-sm text-(--color-blue) px-2 pt-0.5 pb-1 rounded-full hover:text-white border border-(--color-blue) hover:bg-(--color-blue) transition-colors"
               >
                 <DecodeFr>{tag.name}</DecodeFr>
               </span>

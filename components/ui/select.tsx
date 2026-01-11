@@ -19,11 +19,12 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-start bg-background px-3 py-2",
+      // Light/dark mode styles
+      "flex h-10 w-full items-center justify-start px-3 py-2",
       "transition-all duration-200 ease-out",
-      "hover:bg-white/5 focus:bg-white/5",
-      "focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-black",
-      "data-[state=open]:bg-white/5 data-[state=open]:ring-2 data-[state=open]:ring-white/20",
+      "bg-[var(--bg-main)] text-[var(--text-main)] border border-[var(--border,theme(colors.zinc.200))]",
+      "hover:bg-[var(--bg-main)] focus:bg-[var(--bg-main)]",
+      "focus:outline-none",
       className
     )}
     {...props}
@@ -79,14 +80,15 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 max-h-96 min-w-32 bg-black text-popover-foreground shadow-xl rounded-lg border border-white/10",
-        "overflow-hidden",
+        // Light/dark mode styles
+        "relative z-50 max-h-96 min-w-32 shadow-xl border overflow-hidden",
+        "bg-[var(--bg-main)] text-[var(--text-main)] border-[var(--border,theme(colors.zinc.200))]",
+        "transition-all duration-200 ease-out",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2",
         "data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-        "transition-all duration-200 ease-out",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className
@@ -130,9 +132,11 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-pointer select-none items-center rounded-sm py-2.5 pl-8 pr-2 text-sm outline-none",
+      // Light/dark mode styles
+      "relative flex w-full cursor-pointer select-none items-center py-2.5 pl-8 pr-2 text-sm outline-none",
       "transition-colors duration-350 ease-out",
-      "hover:bg-white/10 focus:bg-white/10",
+      "bg-[var(--bg-main)] text-[var(--text-main)]",
+      "hover:bg-[var(--bg-main)] focus:bg-[var(--bg-main)]",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}

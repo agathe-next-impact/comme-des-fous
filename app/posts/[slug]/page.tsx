@@ -84,7 +84,7 @@ export default async function Page({
 
           <Container className="mt-8">
 
-                <div className="flex justify-between items-center gap-4 text-sm mb-4 pb-4">
+                <div className="flex justify-between items-center gap-4 mb-4 pb-4">
                   <h5>
                     Publié {date} par{" "}
                     {author?.name ? (
@@ -97,7 +97,7 @@ export default async function Page({
                   </h5>
                   <div className="flex gap-2 items-center">
                     {category && (
-                      <span className="text-xs text-(--color-red) px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+                      <span className="text-(--color-red) pt-0.5 pb-1 px-2 rounded-full hover:text-white border border-(--color-red) transition-colors">
                         {category.name}
                       </span>
                     )}
@@ -110,7 +110,7 @@ export default async function Page({
                       <a 
                         key={tag.id}
                         href={`/${tag.slug}`}
-                        className="text-xs text-(--color-yellow) px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors border-b-grey-500"
+                        className="text-sm text-(--color-blue) px-2 pt-0.5 pb-1 rounded-full hover:text-white hover:bg-(--color-blue) border border-(--color-blue) transition-colors"
                       >
                         {tag.name}
                       </a>

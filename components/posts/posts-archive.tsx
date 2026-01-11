@@ -71,7 +71,7 @@ export async function PostsArchive({
 
   if (posts.length === 0) {
     return (
-      <div className="h-24 w-full border rounded-lg bg-accent/25 flex items-center justify-center">
+      <div className="h-24 w-full flex items-center justify-center">
         <p>{emptyMessage}</p>
       </div>
     );
@@ -88,7 +88,7 @@ export async function PostsArchive({
         initialCategory={category}
         initialSearch={search}
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border-l border-t border-white/20">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 border-l border-t border-white/20">
         {posts.map((post, index) => (
           <PostCard key={post.id} post={post} index={index} />
         ))}

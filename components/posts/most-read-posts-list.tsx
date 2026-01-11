@@ -7,7 +7,7 @@ import { getRecentPosts } from "@/lib/wordpress";
  **/
 export async function MostReadPostsList() {
   // Récupère les posts sticky (mis en avant)
-  const posts = await getRecentPosts({ sticky: true });
+  const posts = await getRecentPosts();
   // Filtre strict côté front pour ne garder que les sticky
   const mostRead = posts.filter((post) => post.sticky);
 

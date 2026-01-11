@@ -8,6 +8,10 @@
   --text-main: #fff;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   background-color: var(--bg-main);
   color: var(--text-main);
@@ -18,6 +22,7 @@ body {
 html {
   overflow-y: scroll !important;
 }
+
 
 /* Utilisation dans les composants :
    bg-[var(--bg-main)] text-[var(--text-main)]
@@ -133,7 +138,7 @@ html {
   }
 
     body {
-      /* overflow-x: hidden; */
+      overflow-x: hidden; 
       background-color: #000;
       color: white;
       /* font-family: 'Host Grotesk', ... supprimé pour laisser Tailwind gérer la police */

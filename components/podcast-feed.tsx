@@ -157,7 +157,7 @@ export function PodcastFeed({ feedUrl, maxEpisodes = 10 }: PodcastFeedProps) {
       {podcastInfo && (
         <div className="flex flex-col md:flex-row gap-6 items-start bg-gradient-to-br from-primary/10 to-primary/5 p-6">
           {podcastInfo.imageUrl && (
-            <div className="relative w-100 h-100 flex-shrink-0 overflow-hidden">
+            <div className="hidden sm:block relative w-100 h-100 flex-shrink-0 overflow-hidden">
               <Image
                 src={podcastInfo.imageUrl}
                 alt={podcastInfo.title}
