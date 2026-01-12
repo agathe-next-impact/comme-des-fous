@@ -1,3 +1,8 @@
+import he from 'he';
+// Décode les entités HTML (&amp;, &#8217;, etc.) en caractères normaux (universel SSR + client)
+export function decodeHtmlEntities(str: string): string {
+  return he.decode(str);
+}
 import { siteConfig } from "@/site.config";
 import type { Metadata } from "next";
 

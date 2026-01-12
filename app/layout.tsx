@@ -12,12 +12,12 @@ import { cn } from "@/lib/utils";
 import { URLRewriter } from "@/components/url-rewriter";
 
 import type { Metadata } from "next";
+import { decodeHtmlEntities } from '@/lib/metadata';
 
 
 export const metadata: Metadata = {
-  title: "Comme des Fous - Changer les regards sur la folie",
-  description:
-    "Changer les regards sur la folie",
+  title: decodeHtmlEntities("Comme des Fous - Changer les regards sur la folie"),
+  description: "Changer les regards sur la folie",
   metadataBase: new URL(siteConfig.site_domain),
   alternates: {
     canonical: "/",
@@ -44,16 +44,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning className="overflow-x-hidden">
       <head>
         {/* Host Grotesk et New Astro Soft via Adobe Fonts */}
         <link rel="stylesheet" href="https://use.typekit.net/otn3nyx.css" />
       </head>
-      <body className={cn("min-h-screen font-sans antialiased")}> 
+      <body className={cn("min-h-screen min-w-screen font-sans antialiased")}> 
         <URLRewriter />
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >

@@ -35,7 +35,7 @@ export async function PostsArchive({
   author,
   search,
   page = 1,
-  postsPerPage = 9,
+  postsPerPage = 8,
   emptyMessage = "Pas d'articles disponibles pour le moment.",
   baseUrl = "/posts",
 }: PostsArchiveProps) {

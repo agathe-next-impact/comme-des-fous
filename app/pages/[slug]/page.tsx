@@ -1,5 +1,5 @@
 import { getPageBySlug, getAllPages } from "@/lib/wordpress";
-import { generateContentMetadata, stripHtml } from "@/lib/metadata";
+import { generateContentMetadata, stripHtml, decodeHtmlEntities } from "@/lib/metadata";
 import { Section, Container, Prose } from "@/components/craft";
 import { notFound } from "next/navigation";
 
@@ -33,7 +33,7 @@ export async function generateMetadata({
     : stripHtml(page.content.rendered).slice(0, 200) + "...";
 
   return generateContentMetadata({
-    title: page.title.rendered,
+    title: decodeHtmlEntities(page.title.rendered),
     description,
     slug: page.slug,
     basePath: "pages",

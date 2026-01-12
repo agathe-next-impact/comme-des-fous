@@ -7,7 +7,7 @@ import {
   getAllPostSlugs,
   scrapePostEmbeddedMedia,
 } from "@/lib/wordpress";
-import { generateContentMetadata, stripHtml } from "@/lib/metadata";
+import { generateContentMetadata, stripHtml, decodeHtmlEntities } from "@/lib/metadata";
 import { Section, Container, Article, Prose } from "@/components/craft";
 import { badgeVariants } from "@/components/ui/badge";
 import { PostContent } from "@/components/posts/post-content";
@@ -35,7 +35,7 @@ export async function generateMetadata({
   }
 
   return generateContentMetadata({
-    title: post.title.rendered,
+    title: decodeHtmlEntities(post.title.rendered),
     description: stripHtml(post.excerpt.rendered),
     slug: post.slug,
     basePath: "posts",
@@ -77,7 +77,7 @@ export default async function Page({
     <Section>
       <Container>
         <Hero
-          titre={post.title.rendered}
+          titre={decodeHtmlEntities(post.title.rendered)}
           sousTitre=""
         />
       </Container>

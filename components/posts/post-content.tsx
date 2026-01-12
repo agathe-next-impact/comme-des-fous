@@ -267,20 +267,20 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
       <div
         ref={contentRef}
         className={cn(
-          "max-w-4xl mx-auto p-8 bg-white/80",
+          "max-w-4xl mx-auto p-8",
           "prose prose-lg dark:prose-invert",
           "prose-headings:font-bold prose-headings:tracking-tight prose-headings:mt-12 prose-headings:mb-6 prose-headings:leading-tight",
-          "prose-p:text-black prose-p:mb-6",
+          "prose-p:mb-6",
           "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
-          "prose-strong:font-bold prose-strong:text-black",
+          "prose-strong:font-bold",
           "prose-code:text-primary prose-code:before:content-none prose-code:after:content-none",
-          "prose-pre:bg-muted prose-pre:text-black",
-          "prose-blockquote:border-primary prose-blockquote:text-black prose-blockquote:my-8",
+          "prose-pre:bg-muted",
+          "prose-blockquote:border-primary prose-blockquote:my-8",
           "prose-img:shadow-lg prose-img:my-8",
           "prose-ul:my-6 prose-ol:my-6",
           className
         )}
-        style={{ lineHeight: "2.2", color: "#000" }}
+        style={{ lineHeight: "2.2" }}
         dangerouslySetInnerHTML={{ __html: cleanedContent }}
       />
 

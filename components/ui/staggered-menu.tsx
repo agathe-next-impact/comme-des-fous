@@ -428,10 +428,10 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           return arr.map((c, i) => <div key={i} className="sm-prelayer" style={{ background: c }} />);
         })()}
       </div>
-      <header className="staggered-menu-header pl-4 bg-black" aria-label="Main navigation header">
+      <header className="staggered-menu-header bg-black" aria-label="Main navigation header">
         <button
           ref={toggleBtnRef}
-          className="sm-toggle md:text-3xl h-18 min-w-[3rem flex items-end justify-end ml-auto text-white"
+          className="sm-toggle md:text-3xl h-18 min-w-[3rem] flex items-end justify-end ml-auto mt-4 text-white"
           aria-label={open ? 'Close MENU' : 'Open MENU'}
           aria-expanded={open}
           aria-controls="staggered-menu-panel"

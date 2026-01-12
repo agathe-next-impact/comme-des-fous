@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { stripHtml, decodeHtmlEntities } from '@/lib/metadata';
 
 export interface WPMetadata {
   id: number;
@@ -49,12 +50,12 @@ export function WPMetadataFetcher({ endpoint, params, onLoaded }: WPMetadataFetc
 
   return (
     <div>
-      <h3>Métadonnées WordPress</h3>
+      <h3>{decodeHtmlEntities(stripHtml('Métadonnées WordPress'))}</h3>
       <ul>
         {data.map((item) => (
           <li key={item.id}>
-            <strong>{typeof item.title === 'object' ? item.title.rendered : item.title}</strong> — {item.date} — {item.author}
-            <div dangerouslySetInnerHTML={{ __html: typeof item.excerpt === 'object' ? item.excerpt.rendered : item.excerpt }} />
+            <strong>{decodeHtmlEntities(stripHtml(typeof item.title === 'object' ? item.title.rendered : item.title))}</strong> — {item.date} — {item.author}
+            <div>{decodeHtmlEntities(stripHtml(typeof item.excerpt === 'object' ? item.excerpt.rendered : item.excerpt))}</div>
           </li>
         ))}
       </ul>

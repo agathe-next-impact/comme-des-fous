@@ -2,7 +2,6 @@ import { Section, Container } from "@/components/craft";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { mainMenu, contentMenu } from "@/menu.config";
 import { siteConfig } from "@/site.config";
-import Logo from "@/public/logo.png";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -10,50 +9,35 @@ export function Footer() {
   return (
     <footer>
       <Section>
-        <Container className="grid md:grid-cols-[1.5fr_0.5fr_0.5fr] gap-12">
+        <Container className="grid md:grid-cols-[1.5fr_1fr] gap-12 pb-8">
           <div className="flex flex-col gap-6 not-prose">
             <Link href="/">
               <h3 className="sr-only">{siteConfig.site_name}</h3>
               <Image
-                src={Logo}
+                src="/logo.png"
                 alt="Logo"
-                className="dark:invert"
-                width={42}
-                height={26.44}
+                width={84}
+                height={84}
               />
             </Link>
-            <p>{siteConfig.site_description}</p>
+            <p className="font-title text-2xl">Changer les regards sur la folie</p>
           </div>
-          <div className="flex flex-col gap-2 text-sm text-[var(--text-main)]">
-            <h5 className="font-medium text-base" style={{ fontFamily: 'Host Grotesk, sans-serif' }}>Website</h5>
-            {Object.entries(mainMenu).map(([key, href]) => (
-              <Link
-                className="hover:underline underline-offset-4"
-                key={href}
-                href={href}
-              >
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </Link>
-            ))}
-          </div>
-          <div className="flex flex-col gap-2 text-sm">
-            <h5 className="font-medium text-base" style={{ fontFamily: 'Host Grotesk, sans-serif' }}>Blog</h5>
-            {Object.entries(contentMenu).map(([key, href]) => (
-              <Link
-                className="hover:underline underline-offset-4"
-                key={href}
-                href={href}
-              >
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </Link>
-            ))}
-          </div>
+          <div className="flex justify-end items-end gap-4">2025 Comme des fous. Tous droits réservés.</div>
+
         </Container>
-        <Container className="border-t not-prose flex flex-col md:flex-row md:gap-2 gap-6 justify-between md:items-center">
+        <Container className="border-t not-prose flex flex-col md:flex-row md:gap-2 gap-6 justify-between md:items-center pt-4">
           <ThemeToggle />
           <p className="text-[var(--text-main)]">
-            &copy; <a href="https://9d8.dev">9d8</a>. All rights reserved.
-            2025-present.
+            <a href="https://next-impact.digital" target="_blank" rel="noopener noreferrer">Réalisé par Next Impact
+            <Image
+              src="/logo-blanc-carre.png"
+              alt="Next Impact"
+              width={30}
+              height={30}
+              className="inline-block ml-2 align-top filter invert-0 brightness-0 dark:filter-none"
+            />
+            </a>
+
           </p>
         </Container>
       </Section>

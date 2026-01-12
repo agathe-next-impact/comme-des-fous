@@ -15,7 +15,7 @@ const socialItems = [
 
 const Nav = () => {
   return (
-    <div style={{ height: '100vh', background: '#1a1a1a' }}>
+    <div style={{ width: '100vw', height: '100vh', background: '#1a1a1a' }}>
       <StaggeredMenu
         position="right"
         items={menuItems}
@@ -27,7 +27,7 @@ const Nav = () => {
         changeMenuColorOnOpen={true}
         colors={['#B19EEF', '#5227FF']}
         logoUrl="/path-to-your-logo.png"
-        accentColor="#ff6b6b"
+        accentColor="#white"
         onMenuOpen={() => console.log('Menu opened')}
         onMenuClose={() => console.log('Menu closed')}
       />

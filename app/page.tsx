@@ -5,7 +5,10 @@ import Hero from "@/components/hero";
 // Icons
 import { LastArticleSection } from "@/components/last-article-section";
 import { MostReadPostsList } from "@/components/posts/most-read-posts-list";
+import DomeGallery from "@/components/ui/dome-gallery";
 import { getLatestStickyPost, getCategoryById, getTagById } from "@/lib/wordpress";
+import fs from "fs";
+import path from "path";
 
 
 export default async function Home() {
@@ -41,14 +44,26 @@ export default async function Home() {
     };
   }
 
+  const dir = path.join(process.cwd(), "public/all-of-fame");
+  const files = fs.readdirSync(dir);
+  const images = files
+    .filter((f) => /\.(jpe?g|png|webp|gif)$/i.test(f))
+    .map((f) => ({
+      src: `/all-of-fame/${f}`,
+      alt: f,
+    }));
+
   return (
+    <>
+    <Hero titre="COMME DES FOUS" sousTitre="Changer les regards sur la folie"/>
     <Section>
       <Container>
-          <Hero titre="COMME DES FOUS" />
           {article && <LastArticleSection article={article} />}
           <MostReadPostsList />
+          <DomeGallery images={images} />
       </Container>
     </Section>
+    </>
   );
 }
 

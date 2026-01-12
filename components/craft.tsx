@@ -225,7 +225,7 @@ export const Section = ({ children, className, id }: BaseProps) => (
 );
 
 export const Container = ({ children, className, id }: BaseProps) => (
-  <div className={cn("w-full p-0", className)} id={id}>
+  <div className={cn("w-full max-w-7xl mx-auto px-4", className)} id={id}>
     {children}
   </div>
 );
