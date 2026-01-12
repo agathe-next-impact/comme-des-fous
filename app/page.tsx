@@ -6,6 +6,7 @@ import Hero from "@/components/hero";
 import { LastArticleSection } from "@/components/last-article-section";
 import { MostReadPostsList } from "@/components/posts/most-read-posts-list";
 import DomeGallery from "@/components/ui/dome-gallery";
+import Masonry from "@/components/ui/masonry";
 import { getLatestStickyPost, getCategoryById, getTagById } from "@/lib/wordpress";
 import fs from "fs";
 import path from "path";
@@ -53,6 +54,17 @@ export default async function Home() {
       alt: f,
     }));
 
+  const stickersDir = path.join(process.cwd(), "public/stickers");
+  const stickerFiles = fs.readdirSync(stickersDir);
+  const stickerItems = stickerFiles
+    .filter((f) => /\.(jpe?g|png|webp|gif|svg)$/i.test(f))
+    .map((f, i) => ({
+      id: `sticker-${i}`,
+      img: `/stickers/${f}`,
+      url: `/stickers/${f}`,
+      height: 300 + Math.floor(Math.random() * 200), // hauteur aléatoire pour effet masonry
+    }));
+
   return (
     <>
     <Hero titre="COMME DES FOUS" sousTitre="Changer les regards sur la folie"/>
@@ -63,6 +75,9 @@ export default async function Home() {
           <DomeGallery images={images} />
       </Container>
     </Section>
+    <Container className="pb-32">
+          <Masonry items={stickerItems} />
+    </Container>
     </>
   );
 }

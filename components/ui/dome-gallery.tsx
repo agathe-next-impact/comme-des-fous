@@ -111,7 +111,7 @@ function computeItemBaseRotation(offsetX: number, offsetY: number, sizeX: number
 }
 
 export default function DomeGallery({
-  images = ALL_OF_FAME_IMAGES,
+  images,
   fit = 0.5,
   fitBasis = 'auto',
   minRadius = 600,
@@ -167,7 +167,7 @@ export default function DomeGallery({
     document.body.classList.remove('dg-scroll-lock');
   }, []);
 
-  const items = useMemo(() => buildItems(images, segments), [images, segments]);
+  const items = useMemo(() => buildItems(images ?? [], segments), [images, segments]);
 
   const applyTransform = (xDeg: number, yDeg: number) => {
     const el = sphereRef.current;
