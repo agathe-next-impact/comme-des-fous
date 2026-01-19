@@ -117,7 +117,7 @@ export default function DomeGallery({
   minRadius = 600,
   maxRadius = Infinity,
   padFactor = 0.25,
-  overlayBlurColor = '#060010',
+  overlayBlurColor = 'transparent',
   maxVerticalRotationDeg = DEFAULTS.maxVerticalRotationDeg,
   dragSensitivity = DEFAULTS.dragSensitivity,
   enlargeTransitionMs = DEFAULTS.enlargeTransitionMs,
@@ -214,7 +214,7 @@ export default function DomeGallery({
       const viewerPad = Math.max(8, Math.round(minDim * padFactor));
       root.style.setProperty('--radius', `${lockedRadiusRef.current}px`);
       root.style.setProperty('--viewer-pad', `${viewerPad}px`);
-      root.style.setProperty('--overlay-blur-color', overlayBlurColor);
+      root.style.setProperty('--overlay-blur-color', 'transparent');
       root.style.setProperty('--tile-radius', imageBorderRadius);
       root.style.setProperty('--enlarge-radius', openedImageBorderRadius);
       root.style.setProperty('--image-filter', grayscale ? 'grayscale(1)' : 'none');
@@ -254,7 +254,7 @@ export default function DomeGallery({
     minRadius,
     maxRadius,
     padFactor,
-    overlayBlurColor,
+    // overlayBlurColor,
     grayscale,
     imageBorderRadius,
     openedImageBorderRadius,
@@ -665,6 +665,10 @@ export default function DomeGallery({
   }, []);
 
   return (
+    <>
+    <div className='w-full border-b border-b-blue-500 mt-24 '>
+      <h2 className="text-6xl font-title font-bold mb-4">Hall of Fame</h2>
+    </div>
     <div className='w-[calc(100vw - 20px)] h-screen'>
     <div
       ref={rootRef}
@@ -728,5 +732,6 @@ export default function DomeGallery({
       </main>
     </div>
     </div>
+    </>
   );
 }

@@ -49,6 +49,7 @@ import type {
 } from "./wordpress.d";
 
 // Single source of truth for WordPress configuration
+    export type { Post } from "./wordpress.d";
 // Simple in-memory cache for build-time API calls
 const tempCache: Record<string, any> = {};
 

@@ -7,7 +7,9 @@ import { LastArticleSection } from "@/components/last-article-section";
 import { MostReadPostsList } from "@/components/posts/most-read-posts-list";
 import DomeGallery from "@/components/ui/dome-gallery";
 import Masonry from "@/components/ui/masonry";
+import CollagesRow from "@/components/collages-row";
 import { getLatestStickyPost, getCategoryById, getTagById } from "@/lib/wordpress";
+import { extractMediaFromPost } from "@/lib/extract-media";
 import fs from "fs";
 import path from "path";
 
@@ -35,6 +37,11 @@ export default async function Home() {
     }
     // Image principale
     let imageUrl = post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || "/placeholder.jpg";
+    const { mediaUrl, mediaType } = extractMediaFromPost(post);
+    // Ensure mediaType is strictly 'youtube', 'podcast', or undefined (for TS)
+    let validMediaType: "youtube" | "podcast" | undefined = undefined;
+    if (mediaType === "youtube") validMediaType = "youtube";
+    else if (mediaType === "podcast") validMediaType = "podcast";
     article = {
       title: post.title.rendered,
       excerpt: post.excerpt.rendered.replace(/<[^>]+>/g, ""),
@@ -42,6 +49,8 @@ export default async function Home() {
       tags,
       imageUrl,
       link: `/posts/${post.slug}`,
+      mediaUrl,
+      mediaType: validMediaType,
     };
   }
 
@@ -65,6 +74,17 @@ export default async function Home() {
       height: 300 + Math.floor(Math.random() * 200), // hauteur aléatoire pour effet masonry
     }));
 
+  const collagesDir = path.join(process.cwd(), "public/collages");
+  const collageFiles = fs.readdirSync(collagesDir);
+  const collagesItems = collageFiles
+    .filter((f) => /\.(jpe?g|png|webp|gif|svg)$/i.test(f))
+    .map((f, i) => ({
+      id: `collage-${i}`,
+      img: `/collages/${f}`,
+      url: `/collages/${f}`,
+      height: 300 + Math.floor(Math.random() * 200), // hauteur aléatoire pour effet masonry
+    }));
+
   return (
     <>
     <Hero titre="COMME DES FOUS" sousTitre="Changer les regards sur la folie"/>
@@ -72,12 +92,14 @@ export default async function Home() {
       <Container>
           {article && <LastArticleSection article={article} />}
           <MostReadPostsList />
-          <DomeGallery images={images} />
+           <CollagesRow items={collagesItems} titre="Collages" />
+          <DomeGallery images={images} fit={0.75} />
       </Container>
     </Section>
     <Container className="pb-32">
-          <Masonry items={stickerItems} />
+          <Masonry items={stickerItems} titre="Sainte Anne est à nous & La rue est à nous !" colonnes={4} />
     </Container>
+   
     </>
   );
 }

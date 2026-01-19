@@ -69,6 +69,8 @@ interface GridItem extends Item {
 
 interface MasonryProps {
   items: Item[];
+  titre?: string;
+  colonnes?: number;
   ease?: string;
   duration?: number;
   stagger?: number;
@@ -81,6 +83,8 @@ interface MasonryProps {
 
 const Masonry: React.FC<MasonryProps> = ({
   items,
+  titre = "Sainte Anne est à nous ! La rue est à nous !",
+  colonnes,
   ease = 'power3.out',
   duration = 0.6,
   stagger = 0.05,
@@ -90,7 +94,7 @@ const Masonry: React.FC<MasonryProps> = ({
   blurToFocus = true,
   colorShiftOnHover = false
 }) => {
-  const columns = useMedia(
+  const columns = colonnes ?? useMedia(
     ['(min-width:1500px)', '(min-width:1000px)', '(min-width:600px)', '(min-width:400px)'],
     [5, 4, 3, 2],
     1
@@ -243,19 +247,30 @@ const Masonry: React.FC<MasonryProps> = ({
     }
   };
 
+  // Calcul de la hauteur totale nécessaire pour le conteneur
+  const containerHeight = useMemo(() => {
+    if (!grid.length) return 0;
+    return Math.max(...grid.map(item => item.y + item.h));
+  }, [grid]);
+
   return (
-    <div ref={containerRef} className="list">
+    <>
+    <div className="w-full border-b border-b-yellow-500 mt-16 mb-8">
+      <h2 className="text-6xl font-title font-bold mb-4">{titre}</h2>
+    </div>
+    <div ref={containerRef} className="list" style={{ height: containerHeight }}>
+           
       {grid.map(item => {
         return (
           <div
             key={item.id}
             data-key={item.id}
-            className="item-wrapper"
+            className="item-wrapper rounded-2xl"
             onClick={() => window.open(item.url, '_blank', 'noopener')}
             onMouseEnter={e => handleMouseEnter(e, item)}
             onMouseLeave={e => handleMouseLeave(e, item)}
           >
-            <div className="item-img" style={{ backgroundImage: `url(${item.img})` }}>
+            <div className="item-img rounded-2xl" style={{ backgroundImage: `url(${item.img})` }}>
               {colorShiftOnHover && (
                 <div
                   className="color-overlay"
@@ -268,7 +283,7 @@ const Masonry: React.FC<MasonryProps> = ({
                     background: 'linear-gradient(45deg, rgba(255,0,150,0.5), rgba(0,150,255,0.5))',
                     opacity: 0,
                     pointerEvents: 'none',
-                    borderRadius: '8px'
+                    borderRadius: '30px'
                   }}
                 />
               )}
@@ -277,6 +292,7 @@ const Masonry: React.FC<MasonryProps> = ({
         );
       })}
     </div>
+    </>
   );
 };
 

@@ -243,7 +243,7 @@ export function PostCard({
             />
           )}
         </div>
-        <h3 className="text-2xl font-medium">
+        <h3 className="text-2xl font-title font-normal leading-snug letter-spacing-widest group-hover:underline">
           <DecodeFr>{post.title.rendered}</DecodeFr>
         </h3>
         <div
@@ -251,7 +251,7 @@ export function PostCard({
           style={{ fontFamily: "Host Grotesk, sans-serif" }}
         >
           {post.excerpt?.rendered ? (
-            <DecodeFr>{truncateHtml(post.excerpt.rendered, 12)}</DecodeFr>
+            <DecodeFr>{truncateHtml(post.excerpt.rendered, 32)}</DecodeFr>
           ) : (
             "No excerpt available"
           )}
@@ -263,7 +263,6 @@ export function PostCard({
           <p className="text-(--color-red) px-2 py-1 rounded-full hover:text-white hover:bg-(--color-red) border border-(--color-red) transition-colors">
             <DecodeFr>{category?.name || "Uncategorized"}</DecodeFr>
           </p>
-          <p className="text-sm">{author} - {date}</p>
         </div>
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
