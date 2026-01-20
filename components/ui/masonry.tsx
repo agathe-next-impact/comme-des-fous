@@ -40,17 +40,26 @@ const useMeasure = <T extends HTMLElement>() => {
   return [ref, size] as const;
 };
 
-const preloadImages = async (urls: string[]): Promise<void> => {
+const preloadImages = async (urls: string[]): Promise<Map<string, { width: number; height: number }>> => {
+  const dimensions = new Map<string, { width: number; height: number }>();
   await Promise.all(
     urls.map(
       src =>
         new Promise<void>(resolve => {
           const img = new Image();
           img.src = src;
-          img.onload = img.onerror = () => resolve();
+          img.onload = () => {
+            dimensions.set(src, { width: img.naturalWidth, height: img.naturalHeight });
+            resolve();
+          };
+          img.onerror = () => {
+            dimensions.set(src, { width: 1, height: 1 });
+            resolve();
+          };
         })
     )
   );
+  return dimensions;
 };
 
 interface Item {
@@ -102,6 +111,7 @@ const Masonry: React.FC<MasonryProps> = ({
 
   const [containerRef, { width }] = useMeasure<HTMLDivElement>();
   const [imagesReady, setImagesReady] = useState(false);
+  const [imageDimensions, setImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
 
   const getInitialPosition = (item: GridItem) => {
     const containerRect = containerRef.current?.getBoundingClientRect();
@@ -134,11 +144,14 @@ const Masonry: React.FC<MasonryProps> = ({
   };
 
   useEffect(() => {
-    preloadImages(items.map(i => i.img)).then(() => setImagesReady(true));
+    preloadImages(items.map(i => i.img)).then((dims) => {
+      setImageDimensions(dims);
+      setImagesReady(true);
+    });
   }, [items]);
 
   const grid = useMemo<GridItem[]>(() => {
-    if (!width) return [];
+    if (!width || !imagesReady) return [];
 
     const colHeights = new Array(columns).fill(0);
     const columnWidth = width / columns;
@@ -146,14 +159,25 @@ const Masonry: React.FC<MasonryProps> = ({
     return items.map(child => {
       const col = colHeights.indexOf(Math.min(...colHeights));
       const x = columnWidth * col;
-      const height = child.height / 2;
+      
+      // Calculer la hauteur basée sur le ratio réel de l'image
+      const dims = imageDimensions.get(child.img);
+      let height: number;
+      if (dims && dims.width > 0) {
+        // Calcul proportionnel : hauteur = largeur_colonne * (hauteur_image / largeur_image)
+        height = columnWidth * (dims.height / dims.width);
+      } else {
+        // Fallback sur la hauteur fournie
+        height = child.height / 2;
+      }
+      
       const y = colHeights[col];
 
       colHeights[col] += height;
 
       return { ...child, x, y, w: columnWidth, h: height };
     });
-  }, [columns, items, width]);
+  }, [columns, items, width, imagesReady, imageDimensions]);
 
   const hasMounted = useRef(false);
 
@@ -270,7 +294,18 @@ const Masonry: React.FC<MasonryProps> = ({
             onMouseEnter={e => handleMouseEnter(e, item)}
             onMouseLeave={e => handleMouseLeave(e, item)}
           >
-            <div className="item-img rounded-2xl" style={{ backgroundImage: `url(${item.img})` }}>
+            <div className="item-img rounded-2xl" style={{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative' }}>
+              <img 
+                src={item.img} 
+                alt="" 
+                style={{ 
+                  width: '100%', 
+                  height: '100%',
+                  display: 'block',
+                  objectFit: 'cover',
+                  borderRadius: 'inherit'
+                }} 
+              />
               {colorShiftOnHover && (
                 <div
                   className="color-overlay"

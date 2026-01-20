@@ -12,6 +12,7 @@ import { getLatestStickyPost, getCategoryById, getTagById } from "@/lib/wordpres
 import { extractMediaFromPost } from "@/lib/extract-media";
 import fs from "fs";
 import path from "path";
+import BentoStickers from "@/components/ui/bento-stickers";
 
 
 export default async function Home() {
@@ -97,8 +98,8 @@ export default async function Home() {
       </Container>
     </Section>
     <Container className="pb-32">
-          <Masonry items={stickerItems} titre="Sainte Anne est à nous & La rue est à nous !" colonnes={4} />
-    </Container>
+      <BentoStickers />
+     </Container>
    
     </>
   );
