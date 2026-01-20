@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Belanosima:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Averia+Sans+Libre:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Bellefair&family=Capriola&family=Comfortaa:wght@300..700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Fredoka:wght@300..700&family=Luckiest+Guy&family=Mitr:wght@200;300;400;500;600;700&family=National+Park:wght@200..800&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Passion+One:wght@400;700;900&family=Poiret+One&family=Quicksand:wght@300..700&family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&family=Titan+One&family=Urbanist:ital,wght@0,100..900;1,100..900&family=Young+Serif&display=swap');
+
 /* Light/Dark mode inversion (seulement blanc/noir) */
 .light {
   --bg-main: #fff;
@@ -132,7 +135,7 @@ html {
 @layer base {
   /* Classe utilitaire pour la police titre */
   .font-title {
-    font-family: 'new-astro', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-family: 'Belanosima', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     font-weight: 700;
     letter-spacing: -0.02em;
   }

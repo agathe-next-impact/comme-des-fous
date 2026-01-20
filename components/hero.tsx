@@ -11,7 +11,7 @@ interface HeroProps {
 
 export default function Hero({ titre, sousTitre, className }: HeroProps) {
   const pathname = usePathname();
-  const textSize = titre.length > 30 ? "text-[4vw]" : titre.length > 23 ? "text-[6vw]" : titre.length > 19 ? "text-[8vw]" : titre.length > 15 ? "text-[10vw]" : "text-[12.5vw]";
+  const textSize = titre.length > 30 ? "text-[4vw]" : titre.length > 23 ? "text-[5.7vw]" : titre.length > 19 ? "text-[6.2vw]" : titre.length > 15 ? "text-[7.7vw]" : "text-[11.5vw]";
     return (
         <div className="px-4 pb-6 pt-12">
                 <h1 className={`w-full max-w-[100vw] font-title font-bold ${textSize} uppercase tracking-tight ${className}${pathname === "/" ? "text-white" : ""}`}>

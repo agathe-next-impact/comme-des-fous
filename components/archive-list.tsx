@@ -19,9 +19,7 @@ export function ArchiveList<T extends { id: number | string }>({
   emptyMessage,
 }: ArchiveListProps<T>) {
   return (
-    <Section>
-      <Container className="space-y-6">
-        <Prose className="mb-8">
+    <div>
           <Hero titre={title} />
           {items.length > 0 ? (
             <ul className="grid">
@@ -34,9 +32,7 @@ export function ArchiveList<T extends { id: number | string }>({
           ) : (
             <p className="text-muted-foreground">{emptyMessage}</p>
           )}
-        </Prose>
         <BackButton />
-      </Container>
-    </Section>
+      </div>
   );
 }

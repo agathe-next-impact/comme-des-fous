@@ -70,9 +70,8 @@ export default async function Page({
   };
 
   return (
-    <>
-      <Section>
-      <Hero titre="CdF" />
+    <div className="mt-4">
+      <Hero titre="CdF" sousTitre="Changons les regards sur la folie"/>
         <Container>
           <div className="space-y-8">
             <FilterPosts
@@ -147,7 +146,6 @@ export default async function Page({
             )}
           </div>
         </Container>
-      </Section>
-    </>
+      </div>
   );
 }
