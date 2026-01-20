@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { notFound } from "next/navigation";
 
 import type { Metadata } from "next";
+import Hero from "@/components/hero";
 
 // Revalidate every hour
 export const revalidate = 3600;
@@ -26,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: decodeHtmlEntities(page.title.rendered),
     description,
     slug: "coups-de-coeur",
-    basePath: "",
+    basePath: "pages",
   });
 }
 
@@ -144,21 +145,8 @@ export default async function CoupsDeCoeurPage() {
   const { items, headerContent } = parseGutenbergBlocks(page.content.rendered);
 
   return (
-    <main className="min-h-screen">
-      {/* Header */}
-      <section className="relative py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6">
-            <DecodeFr>{page.title.rendered}</DecodeFr>
-          </h1>
-          {headerContent && (
-            <div 
-              className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto prose prose-invert"
-              dangerouslySetInnerHTML={{ __html: headerContent }}
-            />
-          )}
-        </div>
-      </section>
+    <>
+      <Hero titre={page.title.rendered} sousTitre={headerContent} />
 
       {/* Grille de coups de cœur */}
       {items.length > 0 && (
@@ -180,7 +168,7 @@ export default async function CoupsDeCoeurPage() {
           />
         </section>
       )}
-    </main>
+    </>
   );
 }
 
