@@ -364,15 +364,27 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
 
   return (
     <>
+      <style>
+        {`
+          .post-content a {
+            color: #ef4444 !important; /* red-500 */
+          }
+          .post-content a:hover {
+            color: #dc2626 !important; /* red-600 */
+            text-decoration: underline;
+          }
+        `}
+      </style>
       <div className="max-w-4xl mx-auto mt-12 border-t border-white/20 pt-8" />
       <div
         ref={contentRef}
         className={cn(
+          "post-content",
           "max-w-4xl mx-auto p-8",
           "prose prose-lg dark:prose-invert",
           "prose-headings:font-bold prose-headings:tracking-tight prose-headings:mt-12 prose-headings:mb-6 prose-headings:leading-tight",
           "prose-p:mb-6",
-          "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
+          "prose-a:text-red-500 prose-a:no-underline hover:prose-a:underline",
           "prose-strong:font-bold",
           "prose-code:text-primary prose-code:before:content-none prose-code:after:content-none",
           "prose-pre:bg-muted",

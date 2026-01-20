@@ -30,6 +30,7 @@ export function SearchInput({ defaultValue, forcePostsPage }: { defaultValue?: s
       placeholder="Rechercher des articles..."
       defaultValue={defaultValue}
       onChange={(e) => handleSearch(e.target.value)}
+      className="bg-transparent"
     />
   );
 }
