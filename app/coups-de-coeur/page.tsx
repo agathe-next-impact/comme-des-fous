@@ -145,7 +145,7 @@ export default async function CoupsDeCoeurPage() {
   const { items, headerContent } = parseGutenbergBlocks(page.content.rendered);
 
   return (
-    <>
+    <div className="mt-14">
       <Hero titre={page.title.rendered} sousTitre={headerContent} />
 
       {/* Grille de coups de cœur */}
@@ -168,7 +168,7 @@ export default async function CoupsDeCoeurPage() {
           />
         </section>
       )}
-    </>
+    </div>
   );
 }
 

@@ -54,13 +54,11 @@ export default async function DynamicSlugPage({ params, searchParams }: Props) {
   const tag = await getTagBySlug(slug);
   if (tag) {
     return (
-      <Section>
-        <Container>
-          <Hero
-            titre={tag.name}
-            sousTitre={`Retrouvez tous les articles liés au tag "${tag.name}"`}
-          />
-        </Container>
+      <div className="mt-4">
+        <Hero
+          titre={tag.name}
+          sousTitre={`Retrouvez tous les articles liés au tag "${tag.name}"`}
+        />
         <Container className="mt-8">
           <PostsArchive
             tag={String(tag.id)}
@@ -69,7 +67,7 @@ export default async function DynamicSlugPage({ params, searchParams }: Props) {
             emptyMessage="Aucun article disponible pour ce tag."
           />
         </Container>
-      </Section>
+      </div>
     );
   }
   

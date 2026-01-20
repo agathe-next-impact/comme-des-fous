@@ -81,13 +81,11 @@ export default async function Page({
   const comments = await getPostComments(post.id);
 
   return (
-    <Section>
-      <Container>
+    <div className="mt-14">
         <Hero
           titre={decodeHtmlEntities(post.title.rendered)}
           sousTitre=""
         />
-      </Container>
 
           <Container className="mt-8">
               <div className="flex items-center justify-between gap-4 mb-4">
@@ -132,7 +130,7 @@ export default async function Page({
                 <CommentForm postId={post.id} />
                 <RelatedPosts categoryId={category?.id} currentPostId={post.id} />
             </Container>
-          </Section>
+    </div>
 
 
       );

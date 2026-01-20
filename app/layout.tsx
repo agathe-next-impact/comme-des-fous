@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 
 const menuItems = [
   { label: 'Blog', ariaLabel: 'Blog', link: '/posts' },
-  { label: 'On aime', ariaLabel: 'Coups de coeur', link: '/about' },
+  { label: 'On aime', ariaLabel: 'Coups de coeur', link: '/coups-de-coeur' },
   { label: 'Liens', ariaLabel: 'Liens', link: '/liens' },
   { label: 'Contact', ariaLabel: 'Contact', link: '/contact' }
 ];
