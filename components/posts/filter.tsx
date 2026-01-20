@@ -82,7 +82,7 @@ export function FilterPosts({
           {selectedFilters.join(" | ")}
         </div>
       )}
-      <div className="grid md:grid-cols-[1fr_1fr_1fr_0.5fr] gap-6 my-4 z-10!">
+      <div className="px-8 grid md:grid-cols-[1fr_1fr_1fr] gap-6 my-4 z-10!">
       <Select
         value={initialTag || "all"}
         onValueChange={(value) => handleFilterChange("tag", value)}
@@ -121,6 +121,7 @@ export function FilterPosts({
         </SelectContent>
       </Select>
 
+{/*
     {authors.length > 0 && (
       <Select
         value={initialAuthor || "all"}
@@ -143,6 +144,7 @@ export function FilterPosts({
         </SelectContent>
       </Select>
     )}
+*/}
 
       <Button variant="outline" onClick={handleResetFilters}>
         Reset des filtres

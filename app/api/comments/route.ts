@@ -175,7 +175,6 @@ export async function POST(request: NextRequest) {
         );
       }
       
-      console.log("[API Comments] reCAPTCHA passed, score:", recaptchaResult.score);
     } catch (error) {
       console.error("[API Comments] reCAPTCHA error:", error);
       return NextResponse.json(
@@ -220,7 +219,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    console.log("[API Comments] Posting to WordPress:", wpCommentUrl.toString());
 
     const wpResponse = await fetch(wpCommentUrl.toString(), {
       method: "POST",
@@ -229,7 +227,6 @@ export async function POST(request: NextRequest) {
     });
 
     const wpResponseText = await wpResponse.text();
-    console.log("[API Comments] WordPress response status:", wpResponse.status);
 
     if (!wpResponse.ok) {
       let errorMessage = "Erreur lors de la création du commentaire";
@@ -249,7 +246,6 @@ export async function POST(request: NextRequest) {
     }
 
     const comment = JSON.parse(wpResponseText);
-    console.log("[API Comments] Comment created with ID:", comment.id);
 
     return NextResponse.json(
       {

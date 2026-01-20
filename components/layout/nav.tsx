@@ -28,8 +28,8 @@ const Nav = () => {
         colors={['#B19EEF', '#5227FF']}
         logoUrl="/path-to-your-logo.png"
         accentColor="#white"
-        onMenuOpen={() => console.log('Menu opened')}
-        onMenuClose={() => console.log('Menu closed')}
+        onMenuOpen={() => {}}
+        onMenuClose={() => {}}
       />
     </div>
   );

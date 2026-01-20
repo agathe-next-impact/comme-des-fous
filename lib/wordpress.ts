@@ -440,7 +440,6 @@ export async function createOrGetUser(
   
   // Chercher si l'utilisateur existe déjà par email
   try {
-    console.log("[User] Searching for user with email:", emailLower);
     
     // Essayer de récupérer tous les utilisateurs avec une recherche
     // La plupart des WordPress supportent le paramètre search
@@ -449,7 +448,6 @@ export async function createOrGetUser(
       per_page: 100,
     }).catch(() => []);
     
-    console.log(`[User] Found ${users.length} users in search`);
     
     // Filtrer pour trouver l'utilisateur avec l'email exact
     const existingUser = users.find(
@@ -457,11 +455,9 @@ export async function createOrGetUser(
     );
     
     if (existingUser) {
-      console.log("[User] User already exists with ID:", existingUser.id, "Email:", existingUser.email);
       return existingUser;
     }
   } catch (error) {
-    console.log("[User] User search failed:", error);
   }
 
   // Créer un nouvel utilisateur si n'existe pas
@@ -484,7 +480,6 @@ export async function createOrGetUser(
   };
 
   try {
-    console.log("[User] Creating new user with username:", finalUsername, "email:", emailLower);
 
     const response = await fetch(url.toString(), {
       method: "POST",
@@ -497,7 +492,6 @@ export async function createOrGetUser(
     });
 
     const responseText = await response.text();
-    console.log("[User] Create response status:", response.status);
 
     if (!response.ok) {
       let errorMessage = `Failed to create user (${response.status})`;
@@ -514,7 +508,6 @@ export async function createOrGetUser(
       
       // Si c'est un problème de username en double, essayer avec timestamp
       if (errorCode === "existing_user_login" || errorMessage.includes("username")) {
-        console.log("[User] Username conflict, trying with timestamp...");
         body.username = `${username}_${timestamp}`;
         
         try {
@@ -534,7 +527,6 @@ export async function createOrGetUser(
           }
 
           const newUser = JSON.parse(await retryResponse.text());
-          console.log("[User] User created with ID:", newUser.id, "username:", body.username);
           return newUser;
         } catch (retryError) {
           console.warn("[User] Retry failed with error, will use anonymous comment:", retryError);
@@ -548,7 +540,6 @@ export async function createOrGetUser(
     }
 
     const newUser = JSON.parse(responseText);
-    console.log("[User] User created with ID:", newUser.id, "username:", newUser.username);
     return newUser;
   } catch (error) {
     console.error("[User] Fetch error:", error);
@@ -787,7 +778,6 @@ export async function scrapePostEmbeddedMedia(postUrl: string): Promise<{ src: s
     const iframeRegex = /<iframe[^>]*>/gi;
     const iframes = html.match(iframeRegex) || [];
     
-    console.log(`[Scrape] Found ${iframes.length} iframes in ${postUrl}`);
 
     for (const iframe of iframes) {
       // Extract src attribute
@@ -828,7 +818,6 @@ export async function scrapePostEmbeddedMedia(postUrl: string): Promise<{ src: s
         is404 = true;
       }
       if (is404) {
-        console.log(`[Scrape] Ignored iframe (404): ${src}`);
         continue;
       }
 
@@ -848,7 +837,6 @@ export async function scrapePostEmbeddedMedia(postUrl: string): Promise<{ src: s
 
       // Avoid duplicates
       if (!media.some(m => m.src === src)) {
-        console.log(`[Scrape] Found iframe: ${src} (${type})`);
         media.push({ src, title, type });
       }
     }
@@ -933,8 +921,6 @@ export async function createPostComment(
   body.author_email = data.author_email;
 
   try {
-    console.log("[Comment] Sending to:", url.toString());
-    console.log("[Comment] Body:", body);
 
     const response = await fetch(url.toString(), {
       method: "POST",
@@ -947,8 +933,6 @@ export async function createPostComment(
     });
 
     const responseText = await response.text();
-    console.log("[Comment] Response status:", response.status);
-    console.log("[Comment] Response:", responseText);
 
     if (!response.ok) {
       let errorMessage = `Failed to create comment (${response.status})`;

@@ -12,7 +12,7 @@ interface PostContentProps {
 interface EmbeddedMedia {
   src: string;
   title?: string;
-  type: 'video' | 'podcast' | 'social';
+  type: 'video' | 'podcast' | 'social' | 'pdf';
   platform?: 'instagram' | 'tiktok' | 'twitter' | 'facebook';
 }
 
@@ -101,6 +101,11 @@ function getMediaKey(src: string): string {
 
   const facebook = lower.match(/facebook\.com\//i);
   if (facebook) return `fb:${lower}`;
+
+  // PDF files
+  if (lower.endsWith('.pdf') || lower.includes('.pdf?')) {
+    return `pdf:${lower}`;
+  }
 
   return lower;
 }
@@ -204,6 +209,43 @@ function processContent(
     /<a[^>]*href=["'][^"']*(?:instagram\.com|tiktok\.com|twitter\.com|x\.com|facebook\.com)[^"']*["'][^>]*>[^<]*<\/a>/gi,
     ""
   );
+
+  // Extraire les liens PDF
+  const pdfLinkPattern = /<a[^>]*href=["']([^"']*\.pdf(?:\?[^"']*)?)["'][^>]*>([^<]*)<\/a>/gi;
+  let pdfMatch;
+
+  while ((pdfMatch = pdfLinkPattern.exec(content)) !== null) {
+    const href = pdfMatch[1];
+    const linkText = pdfMatch[2];
+
+    addMedia({
+      src: href,
+      title: linkText?.trim() || 'Document PDF',
+      type: 'pdf',
+    });
+  }
+
+  // Supprimer les liens PDF du contenu (seront affichés dans la section médias)
+  modifiedContent = modifiedContent.replace(
+    /<a[^>]*href=["'][^"']*\.pdf(?:\?[^"']*)?["'][^>]*>[^<]*<\/a>/gi,
+    ""
+  );
+
+  // Extraire les embeds PDF (object/embed tags)
+  const pdfEmbedPattern = /<(?:object|embed)[^>]*(?:data|src)=["']([^"']*\.pdf(?:\?[^"']*)?)["'][^>]*>(?:[\s\S]*?<\/(?:object|embed)>)?/gi;
+  let embedMatch;
+
+  while ((embedMatch = pdfEmbedPattern.exec(content)) !== null) {
+    const src = embedMatch[1];
+    addMedia({
+      src: src,
+      title: 'Document PDF',
+      type: 'pdf',
+    });
+  }
+
+  // Supprimer les embeds PDF du contenu
+  modifiedContent = modifiedContent.replace(pdfEmbedPattern, "");
 
   // Supprimer blockquotes et scripts d'embed sociaux (Instagram, Twitter/X, TikTok, Facebook)
   modifiedContent = modifiedContent.replace(
@@ -362,28 +404,69 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
                   "hover:before:w-6 hover:before:h-6 hover:after:w-6 hover:after:h-6"
                 )}
               >
-                <div className={cn(
-                  "relative w-full",
-                  item.type === 'podcast'
-                    ? 'aspect-[3/1]'
-                    : item.type === 'social'
-                      ? 'aspect-[4/5]'
-                      : 'aspect-video'
-                )}>
-                  <iframe
-                    src={item.src}
-                    title={item.title || `${item.type === 'podcast' ? 'Podcast' : item.type === 'social' ? 'Social' : 'Vidéo'} ${index + 1}`}
-                    className="absolute inset-0 w-full h-full"
-                    allow={item.type === 'podcast' 
-                      ? "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      : "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    }
-                    allowFullScreen
-                    loading="lazy"
-                  />
-                </div>
-                {item.title && (
-                  <p className="text-sm text-muted-foreground mt-4">{item.title}</p>
+                {item.type === 'pdf' ? (
+                  /* Rendu spécifique pour les PDFs */
+                  <div className="flex flex-col gap-4">
+                    <div className="relative w-full aspect-[3/4] bg-muted/30">
+                      <iframe
+                        src={`${item.src}#view=FitH`}
+                        title={item.title || 'Document PDF'}
+                        className="absolute inset-0 w-full h-full border-0"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        {item.title || 'Document PDF'}
+                      </p>
+                      <a
+                        href={item.src}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded hover:bg-primary/90 transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="7 10 12 15 17 10"/>
+                          <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Télécharger
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  /* Rendu pour vidéos, podcasts et embeds sociaux */
+                  <>
+                    <div className={cn(
+                      "relative w-full",
+                      item.type === 'podcast'
+                        ? 'aspect-[3/1]'
+                        : item.type === 'social'
+                          ? 'aspect-[4/5]'
+                          : 'aspect-video'
+                    )}>
+                      <iframe
+                        src={item.src}
+                        title={item.title || `${item.type === 'podcast' ? 'Podcast' : item.type === 'social' ? 'Social' : 'Vidéo'} ${index + 1}`}
+                        className="absolute inset-0 w-full h-full"
+                        allow={item.type === 'podcast' 
+                          ? "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                          : "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        }
+                        allowFullScreen
+                        loading="lazy"
+                      />
+                    </div>
+                    {item.title && (
+                      <p className="text-sm text-muted-foreground mt-4">{item.title}</p>
+                    )}
+                  </>
+                )}
+                {item.type === 'pdf' && (
+                  <span className="absolute top-2 right-2 text-xs bg-red-600 text-white px-2 py-1 rounded-full">
+                    📄 PDF
+                  </span>
                 )}
                 {item.type === 'podcast' && (
                   <span className="absolute top-2 right-2 text-xs bg-green-600 text-white px-2 py-1 rounded-full">
