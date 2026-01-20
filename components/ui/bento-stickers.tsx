@@ -56,6 +56,10 @@ export default function BentoStickers() {
   }
 
   return (
+    <>
+    <div className="w-full border-b border-b-yellow-500 mt-16 mb-8">
+    <h2 className="text-6xl font-title font-medium mb-4">La rue est à nous ! Sainte Anne est à nous !</h2>
+    </div>
     <div className="w-full px-4 py-8">
       <div 
         className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4"
@@ -121,5 +125,6 @@ export default function BentoStickers() {
         })}
       </div>
     </div>
+    </>
   );
 }

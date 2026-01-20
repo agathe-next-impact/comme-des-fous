@@ -3,6 +3,7 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { usePathname } from "next/navigation";
+import { SearchInput } from "@/components/posts/search-input";
 
 export interface StaggeredMenuItem {
   label: string;
@@ -74,20 +75,71 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const busyRef = useRef(false);
   const itemEntranceTweenRef = useRef<gsap.core.Tween | null>(null);
   const pathname = usePathname();
+  const [isLightTheme, setIsLightTheme] = useState(() => {
+    if (typeof document === 'undefined') return false;
+    const body = document.body;
+    const root = document.documentElement;
+    const isExplicitDark =
+      body.classList.contains('dark') ||
+      root.classList.contains('dark') ||
+      body.dataset.theme === 'dark' ||
+      root.dataset.theme === 'dark';
+    if (isExplicitDark) return false;
+    return (
+      body.classList.contains('light') ||
+      root.classList.contains('light') ||
+      body.dataset.theme === 'light' ||
+      root.dataset.theme === 'light'
+    );
+  });
 
   // Couleur du bouton selon la page
   let computedMenuButtonColor = menuButtonColor;
   let computedOpenMenuButtonColor = openMenuButtonColor;
-  const isLight = typeof window !== 'undefined' && document.body.classList.contains('light');
-  if (
+  const forceBlack =
+    isLightTheme ||
     pathname === "/posts/categories/a-voir" ||
     pathname === "/posts/categories/a-ecouter" ||
-    pathname === "/posts/categories/a-lire" ||
-    (pathname === "/" && isLight)
-  ) {
+    pathname === "/posts/categories/a-lire";
+  if (forceBlack) {
     computedMenuButtonColor = "#000";
     computedOpenMenuButtonColor = "#000";
   }
+
+  // Observe theme changes (class or data-theme toggled by ThemeProvider)
+  React.useEffect(() => {
+    const body = typeof document !== 'undefined' ? document.body : null;
+    const root = typeof document !== 'undefined' ? document.documentElement : null;
+    if (!body || !root) return;
+
+    const computeIsLight = () => {
+      // Priorité : si une classe/data-theme "dark" est présente, on force dark
+      const isExplicitDark =
+        body.classList.contains('dark') ||
+        root.classList.contains('dark') ||
+        body.dataset.theme === 'dark' ||
+        root.dataset.theme === 'dark';
+      if (isExplicitDark) return false;
+      return (
+        body.classList.contains('light') ||
+        root.classList.contains('light') ||
+        body.dataset.theme === 'light' ||
+        root.dataset.theme === 'light'
+      );
+    };
+
+    // Set initial
+    setIsLightTheme(computeIsLight());
+
+    const observer = new MutationObserver(() => {
+      setIsLightTheme(computeIsLight());
+    });
+
+    observer.observe(body, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+    observer.observe(root, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+
+    return () => observer.disconnect();
+  }, []);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -114,7 +166,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       if (toggleBtnRef.current) gsap.set(toggleBtnRef.current, { color: computedMenuButtonColor });
     });
     return () => ctx.revert();
-  }, [menuButtonColor, position]);
+  }, [menuButtonColor, position, forceBlack]);
   // Ajout des couleurs calculées dans les dépendances
 
   const buildOpenTimeline = useCallback(() => {
@@ -428,30 +480,35 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           return arr.map((c, i) => <div key={i} className="sm-prelayer" style={{ background: c }} />);
         })()}
       </div>
-      <header className="staggered-menu-header bg-black" aria-label="Main navigation header">
-        <button
-          ref={toggleBtnRef}
-          className="sm-toggle md:text-3xl h-18 min-w-[3rem] flex items-end justify-end ml-auto mt-4 text-white"
-          aria-label={open ? 'Close MENU' : 'Open MENU'}
-          aria-expanded={open}
-          aria-controls="staggered-menu-panel"
-          onClick={toggleMenu}
-          type="button"
-        >
-          <span ref={textWrapRef} className="sm-toggle-textWrap" aria-hidden="true">
-            <span ref={textInnerRef} className="sm-toggle-textInner">
-              {textLines.map((l, i) => (
-                <span className="sm-toggle-line" key={i}>
-                  {l}
-                </span>
-              ))}
+      <header className="staggered-menu-header bg-background" aria-label="Main navigation header">
+        <div className="flex items-center gap-4 px-4 w-full">
+          <div className="flex-1 max-w-md">
+            <SearchInput forcePostsPage={true} />
+          </div>
+          <button
+            ref={toggleBtnRef}
+            className="sm-toggle md:text-3xl h-18 min-w-[3rem] flex items-end justify-end ml-auto mt-4"
+            aria-label={open ? 'Close MENU' : 'Open MENU'}
+            aria-expanded={open}
+            aria-controls="staggered-menu-panel"
+            onClick={toggleMenu}
+            type="button"
+          >
+            <span ref={textWrapRef} className="sm-toggle-textWrap" aria-hidden="true">
+              <span ref={textInnerRef} className="sm-toggle-textInner">
+                {textLines.map((l, i) => (
+                  <span className="sm-toggle-line" key={i}>
+                    {l}
+                  </span>
+                ))}
+              </span>
             </span>
-          </span>
-          <span ref={iconRef} className="sm-icon" aria-hidden="true">
-            <span ref={plusHRef} className="sm-icon-line scale-[1.7]" />
-            <span ref={plusVRef} className="sm-icon-line sm-icon-line-v scale-[1.7]" />
-          </span>
-        </button>
+            <span ref={iconRef} className="sm-icon" aria-hidden="true">
+              <span ref={plusHRef} className="sm-icon-line scale-[1.7]" />
+              <span ref={plusVRef} className="sm-icon-line sm-icon-line-v scale-[1.7]" />
+            </span>
+          </button>
+        </div>
       </header>
 
       <aside id="staggered-menu-panel" ref={panelRef} className="staggered-menu-panel" aria-hidden={!open}>

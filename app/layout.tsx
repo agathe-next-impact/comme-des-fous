@@ -12,11 +12,12 @@ import { cn } from "@/lib/utils";
 import { URLRewriter } from "@/components/url-rewriter";
 
 import type { Metadata } from "next";
-import { decodeHtmlEntities } from '@/lib/metadata';
-
+import { decodeHtmlEntities } from "@/lib/metadata";
 
 export const metadata: Metadata = {
-  title: decodeHtmlEntities("Comme des Fous - Changer les regards sur la folie"),
+  title: decodeHtmlEntities(
+    "Comme des Fous - Changer les regards sur la folie",
+  ),
   description: "Changer les regards sur la folie",
   metadataBase: new URL(siteConfig.site_domain),
   alternates: {
@@ -25,18 +26,18 @@ export const metadata: Metadata = {
 };
 
 const menuItems = [
-  { label: 'Blog', ariaLabel: 'Blog', link: '/posts' },
-  { label: 'On aime', ariaLabel: 'Coups de coeur', link: '/coups-de-coeur' },
-  { label: 'Liens', ariaLabel: 'Liens', link: '/liens' },
-  { label: 'Contact', ariaLabel: 'Contact', link: '/contact' }
+  { label: "Blog", ariaLabel: "Blog", link: "/posts" },
+  { label: "On aime", ariaLabel: "Coups de coeur", link: "/coups-de-coeur" },
+  { label: "BDthèque", ariaLabel: "BDthèque", link: "/bedetheque" },
+  { label: "Playlist", ariaLabel: "Playlist", link: "/playlist-musicale-de-fous" },
+  { label: "Liens", ariaLabel: "Liens", link: "/liens" },
 ];
 
 const socialItems = [
-  { label: 'Twitter', link: 'https://twitter.com' },
-  { label: 'GitHub', link: 'https://github.com' },
-  { label: 'LinkedIn', link: 'https://linkedin.com' }
+  { label: "Twitter", link: "https://twitter.com" },
+  { label: "GitHub", link: "https://github.com" },
+  { label: "LinkedIn", link: "https://linkedin.com" },
 ];
-
 
 export default function RootLayout({
   children,
@@ -49,7 +50,7 @@ export default function RootLayout({
         {/* Host Grotesk et New Astro Soft via Adobe Fonts */}
         <link rel="stylesheet" href="https://use.typekit.net/otn3nyx.css" />
       </head>
-      <body className={cn("min-h-screen min-w-screen font-sans antialiased")}> 
+      <body className={cn("min-h-screen min-w-screen font-sans antialiased")}>
         <URLRewriter />
         <ThemeProvider
           attribute="class"
@@ -58,19 +59,19 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TopBar />
-            <StaggeredMenu
-              position="right"
-              items={menuItems}
-              socialItems={socialItems}
-              displaySocials={true}
-              displayItemNumbering={true}
-              menuButtonColor="#fff"
-              openMenuButtonColor="#fff"
-              changeMenuColorOnOpen={true}
-              colors={['#000000', '#000000']}
-              logoUrl="/path-to-your-logo.png"
-              accentColor="#ff6b6b"
-            />
+          <StaggeredMenu
+            position="right"
+            items={menuItems}
+            socialItems={socialItems}
+            displaySocials={true}
+            displayItemNumbering={true}
+            menuButtonColor="#fff"
+            openMenuButtonColor="#fff"
+            changeMenuColorOnOpen={true}
+            colors={["#000000", "#000000"]}
+            logoUrl="/path-to-your-logo.png"
+            accentColor="#ff6b6b"
+          />
           {children}
           <Footer />
         </ThemeProvider>

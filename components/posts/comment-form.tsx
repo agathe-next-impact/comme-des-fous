@@ -152,13 +152,13 @@ export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
       <h3 className="text-2xl font-bold mb-6">Laisser un commentaire</h3>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded">
+        <div className="mb-4 p-4 bg-destructive/10 border border-destructive text-destructive rounded">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-4 bg-green-600/20 border border-green-600 text-green-200 rounded">
+        <div className="mb-4 p-4 bg-green-500/10 dark:bg-green-500/20 border border-green-500 text-green-700 dark:text-green-400 rounded">
           Commentaire envoyé avec succès ! Il sera affiché après modération.
         </div>
       )}
@@ -180,9 +180,9 @@ export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
               onChange={handleChange}
               disabled={isSubmitting}
               className={cn(
-                "w-full px-3 py-2 bg-white/10 border border-white/20 rounded",
-                "text-white placeholder-white/50 outline-none",
-                "focus:border-primary focus:bg-white/15 transition",
+                "w-full px-3 py-2 bg-background border border-border rounded",
+                "text-foreground placeholder:text-muted-foreground outline-none",
+                "focus:border-primary focus:ring-1 focus:ring-primary transition",
                 "disabled:opacity-50 disabled:cursor-not-allowed"
               )}
               placeholder="Votre pseudo"
@@ -205,9 +205,9 @@ export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
               onChange={handleChange}
               disabled={isSubmitting}
               className={cn(
-                "w-full px-3 py-2 bg-white/10 border border-white/20 rounded",
-                "text-white placeholder-white/50 outline-none",
-                "focus:border-primary focus:bg-white/15 transition",
+                "w-full px-3 py-2 bg-background border border-border rounded",
+                "text-foreground placeholder:text-muted-foreground outline-none",
+                "focus:border-primary focus:ring-1 focus:ring-primary transition",
                 "disabled:opacity-50 disabled:cursor-not-allowed"
               )}
               placeholder="votre@email.com"
@@ -228,9 +228,9 @@ export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
             disabled={isSubmitting}
             rows={5}
             className={cn(
-              "w-full px-3 py-2 bg-white/10 border border-white/20 rounded",
-              "text-white placeholder-white/50 outline-none",
-              "focus:border-primary focus:bg-white/15 transition resize-none",
+              "w-full px-3 py-2 bg-background border border-border rounded",
+              "text-foreground placeholder:text-muted-foreground outline-none",
+              "focus:border-primary focus:ring-1 focus:ring-primary transition resize-none",
               "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
             placeholder="Votre commentaire..."
@@ -242,7 +242,7 @@ export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
           type="submit"
           disabled={isSubmitting}
           className={cn(
-            "px-6 py-2 bg-primary text-white font-medium rounded",
+            "px-6 py-2 bg-primary text-primary-foreground font-medium rounded",
             "hover:bg-primary/90 transition-colors",
             "disabled:opacity-50 disabled:cursor-not-allowed"
           )}

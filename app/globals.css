@@ -214,7 +214,7 @@ html {
   background: transparent;
   border: none;
   cursor: pointer;
-  color: white;
+  color: inherit;
   font-weight: 500;
   line-height: 1;
   overflow: visible;
@@ -255,10 +255,7 @@ html {
   display: block;
   height: 1em;
   line-height: 1;
-}
-
-.staggered-menu-wrapper[data-open] .sm-toggle-line {
-  color: black;
+  color: currentColor;
 }
 
 .sm-icon {
@@ -282,14 +279,10 @@ html {
   top: 50%;
   width: 100%;
   height: 2px;
-  background: white;
+  background: currentColor;
   border-radius: 2px;
   transform: translate(-50%, -50%);
   will-change: transform;
-}
-
-.staggered-menu-wrapper[data-open] .sm-icon-line {
-  background: black;
 }
 
 .sm-line {

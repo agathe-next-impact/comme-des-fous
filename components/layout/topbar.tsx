@@ -9,9 +9,10 @@ export default function TopBar() {
   return (
 
   <nav className="w-full bg-black border-b border-white/30 shadow-sm flex items-center font-sans fixed top-0 left-0 z-50">
+
     <Link
       href="/"
-      className="w-full pl-4 font-regular text-white tracking-tight transition-colors flex items-center h-full"
+      className="w-full pl-4 font-regular text-white tracking-tight transition-colors flex items-center h-full border-l border-white/30"
     >
       <span className="block md:hidden">CdF</span>
       <span className="hidden md:block">Comme des fous</span>

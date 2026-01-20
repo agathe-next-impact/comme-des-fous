@@ -13,7 +13,7 @@ export function CommentsList({ comments }: CommentsListProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto mt-12 border-t border-white/20 pt-8">
+    <div className="max-w-4xl mx-auto mt-12 border-t border-border pt-8">
       <h3 className="text-2xl font-bold mb-8">
         Commentaires ({comments.length})
       </h3>
@@ -33,7 +33,7 @@ export function CommentsList({ comments }: CommentsListProps) {
               key={comment.id}
               className={cn(
                 "border-l-4 border-primary pl-6 py-4",
-                "bg-white/5 px-6 rounded-r"
+                "bg-muted/30 px-6 rounded-r"
               )}
             >
               <div className="flex items-start gap-4 mb-3">
@@ -46,14 +46,14 @@ export function CommentsList({ comments }: CommentsListProps) {
                   />
                 )}
                 <div>
-                  <p className="font-semibold text-white">
+                  <p className="font-semibold text-foreground">
                     {comment.author_name}
                   </p>
                   <p className="text-xs text-muted-foreground">{commentDate}</p>
                 </div>
               </div>
               <div
-                className="text-sm text-white/90 leading-relaxed prose prose-sm dark:prose-invert max-w-none"
+                className="text-sm text-foreground/90 leading-relaxed prose prose-sm dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: comment.content.rendered }}
               />
             </div>
