@@ -3,7 +3,6 @@ import { DecodeFr } from "./decode-fr";
 import Link from "next/link";
 
 
-import { isYoutubeUrl, isPodcastUrl } from "@/lib/media-helpers";
 
 interface Article {
   title: string;
@@ -62,7 +61,7 @@ export const LastArticleSection: React.FC<LastArticleSectionProps> = ({ article 
                 <Link
                   key={cat}
                   href={`/posts/categories/${encodeURIComponent(cat.toLowerCase().replace(/\s+/g, '-'))}`}
-                  className="text-xs text-(--color-red) mb-4 px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                  className="text-xs text-(--color-red) border border-(--color-red) mb-4 px-2 py-1 transition-colors"
                 >
                   {cat}
                 </Link>
@@ -73,7 +72,7 @@ export const LastArticleSection: React.FC<LastArticleSectionProps> = ({ article 
                 <Link
                   key={tag}
                   href={`/posts/tags/${encodeURIComponent(tag.toLowerCase().replace(/\s+/g, '-'))}`}
-                  className="text-xs text-(--color-yellow) px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                  className="text-xs text-(--color-yellow) border border-(--color-yellow) px-2 py-1 transition-colors"
                 >
                   #{tag}
                 </Link>

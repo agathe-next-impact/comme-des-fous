@@ -20,7 +20,7 @@ export function Footer() {
                 height={84}
               />
             </Link>
-            <p className="font-title text-2xl">Changer les regards sur la folie</p>
+            <p className="font-title text-2xl font-medium">Changer les regards sur la folie</p>
           </div>
           <div className="flex justify-end items-end gap-4">2025 Comme des fous. Tous droits réservés.</div>
 

@@ -260,7 +260,7 @@ export function PostCard({
 
       <div className="flex flex-col gap-4 border-t border-t-white/30 pt-4">
         <div className="flex justify-between items-center text-sm">
-          <p className="text-(--color-red) px-2 py-1 rounded-full hover:text-white hover:bg-(--color-red) border border-(--color-red) transition-colors">
+          <p className="text-(--color-red) px-2 py-1 hover:text-white hover:bg-(--color-red) border border-(--color-red) transition-colors">
             <DecodeFr>{category?.name || "Uncategorized"}</DecodeFr>
           </p>
         </div>
@@ -269,7 +269,7 @@ export function PostCard({
             {tags.slice(0, 3).map((tag: any) => (
               <span
                 key={tag.id}
-                className="text-sm text-(--color-blue) px-2 pt-0.5 pb-1 rounded-full hover:text-white border border-(--color-blue) hover:bg-(--color-blue) transition-colors"
+                className="text-sm text-(--color-blue) px-2 pt-0.5 pb-1 hover:text-white border border-(--color-blue) hover:bg-(--color-blue) transition-colors"
               >
                 <DecodeFr>{tag.name}</DecodeFr>
               </span>

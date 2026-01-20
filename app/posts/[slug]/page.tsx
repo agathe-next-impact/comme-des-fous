@@ -6,11 +6,15 @@ import {
   getTagById,
   getAllPostSlugs,
   scrapePostEmbeddedMedia,
+  getPostComments,
 } from "@/lib/wordpress";
 import { generateContentMetadata, stripHtml, decodeHtmlEntities } from "@/lib/metadata";
 import { Section, Container, Article, Prose } from "@/components/craft";
-import { badgeVariants } from "@/components/ui/badge";
+import Image from "next/image";
 import { PostContent } from "@/components/posts/post-content";
+import { RelatedPosts } from "@/components/posts/related-posts";
+import { CommentsList } from "@/components/posts/comments-list";
+import { CommentForm } from "@/components/posts/comment-form";
 
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -73,6 +77,9 @@ export default async function Page({
   // Scraper les médias embarqués depuis la page publique WordPress
   const scrapedMedia = await scrapePostEmbeddedMedia(post.link);
 
+  // Récupérer les commentaires
+  const comments = await getPostComments(post.id);
+
   return (
     <Section>
       <Container>
@@ -83,21 +90,12 @@ export default async function Page({
       </Container>
 
           <Container className="mt-8">
-
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <div>
                 <div className="flex justify-between items-center gap-4 mb-4 pb-4">
-                  <h5>
-                    Publié {date} par{" "}
-                    {author?.name ? (
-                      <span>
-                        {author.name}
-                      </span>
-                    ) : (
-                      "Anonyme"
-                    )}
-                  </h5>
                   <div className="flex gap-2 items-center">
                     {category && (
-                      <span className="text-(--color-red) pt-0.5 pb-1 px-2 rounded-full hover:text-white border border-(--color-red) transition-colors">
+                      <span className="text-(--color-red) pt-0.5 pb-1 px-2 hover:text-white border border-(--color-red) transition-colors">
                         {category.name}
                       </span>
                     )}
@@ -110,17 +108,32 @@ export default async function Page({
                       <a 
                         key={tag.id}
                         href={`/${tag.slug}`}
-                        className="text-sm text-(--color-blue) px-2 pt-0.5 pb-1 rounded-full hover:text-white hover:bg-(--color-blue) border border-(--color-blue) transition-colors"
+                        className="text-sm text-(--color-blue) px-2 pt-0.5 pb-1 hover:text-white hover:bg-(--color-blue) border border-(--color-blue) transition-colors"
                       >
                         {tag.name}
                       </a>
                     ))}
                   </div>
                 )}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <Image
+                  src={featuredMedia?.source_url || "/logo.png"}
+                  alt={featuredMedia?.alt_text || "Featured media"}
+                  width={250}
+                  height={250}
+                  className="object-cover rounded-md"
+                />
+              </div>
+              </div>
                 
                 <PostContent content={post.content.rendered} scrapedMedia={scrapedMedia} />
-
+                <CommentsList comments={comments} />
+                <CommentForm postId={post.id} />
+                <RelatedPosts categoryId={category?.id} currentPostId={post.id} />
             </Container>
           </Section>
+
+
       );
 }

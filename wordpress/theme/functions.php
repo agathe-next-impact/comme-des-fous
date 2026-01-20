@@ -70,3 +70,45 @@ add_action('after_setup_theme', function () {
     // Remove WordPress version
     remove_action('wp_head', 'wp_generator');
 });
+
+/**
+ * Bypass Akismet pour les commentaires soumis via l'API REST
+ * Akismet marque souvent les commentaires API comme spam car ils viennent du serveur
+ */
+
+// 1. Désactiver complètement Akismet pour les requêtes REST API
+add_filter('akismet_get_api_key', function($api_key) {
+    if (defined('REST_REQUEST') && REST_REQUEST) {
+        return ''; // Retourne une clé vide = Akismet désactivé
+    }
+    return $api_key;
+});
+
+// 2. Forcer le statut "hold" (modération) pour les commentaires REST, pas "spam"
+add_filter('pre_comment_approved', function($approved, $commentdata) {
+    if (defined('REST_REQUEST') && REST_REQUEST) {
+        // Toujours mettre en modération, jamais en spam
+        return '0'; // '0' = hold, '1' = approved, 'spam' = spam
+    }
+    return $approved;
+}, 1, 2); // Priorité 1 = s'exécute en premier
+
+// 3. Empêcher Akismet de modifier le statut après insertion (hook tardif)
+add_filter('akismet_comment_nonce', function($nonce) {
+    if (defined('REST_REQUEST') && REST_REQUEST) {
+        return 'inactive'; // Désactive la vérification nonce Akismet pour REST
+    }
+    return $nonce;
+});
+
+// 4. Dernier recours : corriger le statut après qu'Akismet l'ait modifié
+add_action('comment_post', function($comment_id, $comment_approved) {
+    if (defined('REST_REQUEST') && REST_REQUEST) {
+        $comment = get_comment($comment_id);
+        if ($comment && $comment->comment_approved === 'spam') {
+            // Forcer le passage en modération au lieu de spam
+            wp_set_comment_status($comment_id, 'hold');
+            error_log("[REST Comments] Comment $comment_id moved from spam to hold");
+        }
+    }
+}, 999, 2); // Priorité très haute = s'exécute après Akismet

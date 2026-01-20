@@ -171,7 +171,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ media });
   } catch (error) {
-    console.error('[API Scrape] Error:', error);
     return NextResponse.json({ error: 'Failed to scrape media' }, { status: 500 });
   }
 }

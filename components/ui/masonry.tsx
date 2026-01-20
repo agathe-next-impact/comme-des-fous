@@ -256,7 +256,7 @@ const Masonry: React.FC<MasonryProps> = ({
   return (
     <>
     <div className="w-full border-b border-b-yellow-500 mt-16 mb-8">
-      <h2 className="text-6xl font-title font-bold mb-4">{titre}</h2>
+      <h2 className="text-6xl font-title font-medium mb-4">{titre}</h2>
     </div>
     <div ref={containerRef} className="list" style={{ height: containerHeight }}>
            

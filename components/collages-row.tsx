@@ -17,7 +17,7 @@ const CollagesRow: React.FC<CollagesRowProps> = ({ items, titre }) => {
   return (
     <>
     <div className="w-full border-b border-red-500 mt-16 mb-8">
-      <h2 className="text-6xl font-title font-bold mb-4">{titre}</h2>
+      <h2 className="text-6xl font-title font-medium mb-4">{titre}</h2>
     </div>
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 overflow-x-auto py-8">
       {items.map((item) => (

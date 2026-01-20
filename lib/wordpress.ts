@@ -47,6 +47,7 @@ import type {
   Author,
   FeaturedMedia,
 } from "./wordpress.d";
+import type { Comment } from "./comments.d";
 
 // Single source of truth for WordPress configuration
     export type { Post } from "./wordpress.d";
@@ -56,7 +57,8 @@ const tempCache: Record<string, any> = {};
 function getCacheKey(path: string, query?: Record<string, any>) {
   return path + (query ? `?${JSON.stringify(query)}` : "");
 }
-const baseUrl = process.env.WORDPRESS_URL;
+// Allow usage from both server (WORDPRESS_URL) and client (NEXT_PUBLIC_WORDPRESS_URL)
+const baseUrl = process.env.WORDPRESS_URL || process.env.NEXT_PUBLIC_WORDPRESS_URL;
 const isConfigured = Boolean(baseUrl);
 
 if (!isConfigured) {
@@ -421,6 +423,139 @@ export async function getAuthorBySlug(slug: string): Promise<Author> {
   );
 }
 
+/**
+ * Crée un utilisateur WordPress ou retourne l'existant
+ */
+export async function createOrGetUser(
+  data: {
+    name: string;
+    email: string;
+  }
+): Promise<Author | null> {
+  if (!baseUrl) {
+    throw new Error("WordPress URL not configured");
+  }
+
+  const emailLower = data.email.toLowerCase();
+  
+  // Chercher si l'utilisateur existe déjà par email
+  try {
+    console.log("[User] Searching for user with email:", emailLower);
+    
+    // Essayer de récupérer tous les utilisateurs avec une recherche
+    // La plupart des WordPress supportent le paramètre search
+    const users = await wordpressFetch<any[]>("/wp-json/wp/v2/users", {
+      search: emailLower,
+      per_page: 100,
+    }).catch(() => []);
+    
+    console.log(`[User] Found ${users.length} users in search`);
+    
+    // Filtrer pour trouver l'utilisateur avec l'email exact
+    const existingUser = users.find(
+      (u: any) => u.email && u.email.toLowerCase() === emailLower
+    );
+    
+    if (existingUser) {
+      console.log("[User] User already exists with ID:", existingUser.id, "Email:", existingUser.email);
+      return existingUser;
+    }
+  } catch (error) {
+    console.log("[User] User search failed:", error);
+  }
+
+  // Créer un nouvel utilisateur si n'existe pas
+  const url = new URL("/wp-json/wp/v2/users", baseUrl);
+  
+  // Générer un username unique à partir de l'email (sans caractères spéciaux)
+  let username = data.email
+    .split("@")[0]
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "_");
+  
+  // Ajouter un timestamp pour garantir l'unicité en cas de doublons
+  const timestamp = Date.now().toString().slice(-6);
+  let finalUsername = username;
+  
+  const body = {
+    username: finalUsername,
+    email: emailLower,
+    name: data.name || data.email.split("@")[0],
+  };
+
+  try {
+    console.log("[User] Creating new user with username:", finalUsername, "email:", emailLower);
+
+    const response = await fetch(url.toString(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    const responseText = await response.text();
+    console.log("[User] Create response status:", response.status);
+
+    if (!response.ok) {
+      let errorMessage = `Failed to create user (${response.status})`;
+      let errorCode = "";
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.message || errorData.error || errorMessage;
+        errorCode = errorData.code || "";
+        console.error("[User] Error code:", errorCode);
+        console.error("[User] Error message:", errorMessage);
+      } catch (e) {
+        console.error("[User] Error response:", responseText);
+      }
+      
+      // Si c'est un problème de username en double, essayer avec timestamp
+      if (errorCode === "existing_user_login" || errorMessage.includes("username")) {
+        console.log("[User] Username conflict, trying with timestamp...");
+        body.username = `${username}_${timestamp}`;
+        
+        try {
+          const retryResponse = await fetch(url.toString(), {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "User-Agent": USER_AGENT,
+              "Accept": "application/json",
+            },
+            body: JSON.stringify(body),
+          });
+
+          if (!retryResponse.ok) {
+            console.warn("[User] Retry also failed, will use anonymous comment");
+            return null;
+          }
+
+          const newUser = JSON.parse(await retryResponse.text());
+          console.log("[User] User created with ID:", newUser.id, "username:", body.username);
+          return newUser;
+        } catch (retryError) {
+          console.warn("[User] Retry failed with error, will use anonymous comment:", retryError);
+          return null;
+        }
+      }
+      
+      // Sinon continuer avec les données de base
+      console.warn("[User] Could not create user, will use anonymous comment");
+      return null;
+    }
+
+    const newUser = JSON.parse(responseText);
+    console.log("[User] User created with ID:", newUser.id, "username:", newUser.username);
+    return newUser;
+  } catch (error) {
+    console.error("[User] Fetch error:", error);
+    return null;
+  }
+}
+
 export async function getPostsByAuthor(authorId: number): Promise<Post[]> {
   return wordpressFetch<Post[]>("/wp-json/wp/v2/posts", { author: authorId });
 }
@@ -749,6 +884,95 @@ export async function scrapePostEmbeddedMedia(postUrl: string): Promise<{ src: s
   } catch (error) {
     console.error(`[Scrape] Error scraping ${postUrl}:`, error);
     return [];
+  }
+}
+
+/**
+ * Récupère les commentaires approuvés d'un article
+ */
+export async function getPostComments(postId: number): Promise<Comment[]> {
+  return wordpressFetchGraceful<Comment[]>(
+    "/wp-json/wp/v2/comments",
+    [],
+    {
+      post: postId,
+      status: "approve",
+      per_page: 100,
+      orderby: "date",
+      order: "asc",
+    },
+    ["wordpress", `post-${postId}`, "comments"]
+  );
+}
+
+/**
+ * Crée un commentaire pour un article
+ */
+export async function createPostComment(
+  postId: number,
+  data: {
+    author_name: string;
+    author_email: string;
+    content: string;
+  }
+): Promise<Comment> {
+  if (!baseUrl) {
+    throw new Error("WordPress URL not configured");
+  }
+
+  const url = new URL("/wp-json/wp/v2/comments", baseUrl);
+  
+  // Paramètres du commentaire
+  const body: any = {
+    post: postId,
+    content: data.content,
+  };
+
+  // Toujours utiliser les informations saisies, sans création/association d'utilisateur
+  body.author_name = data.author_name;
+  body.author_email = data.author_email;
+
+  try {
+    console.log("[Comment] Sending to:", url.toString());
+    console.log("[Comment] Body:", body);
+
+    const response = await fetch(url.toString(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    const responseText = await response.text();
+    console.log("[Comment] Response status:", response.status);
+    console.log("[Comment] Response:", responseText);
+
+    if (!response.ok) {
+      let errorMessage = `Failed to create comment (${response.status})`;
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        errorMessage = responseText || errorMessage;
+      }
+      console.error("[Comment] Error:", errorMessage);
+      throw new WordPressAPIError(
+        errorMessage,
+        response.status,
+        url.toString()
+      );
+    }
+
+    return JSON.parse(responseText);
+  } catch (error) {
+    if (error instanceof WordPressAPIError) {
+      throw error;
+    }
+    console.error("[Comment] Fetch error:", error);
+    throw new Error(`Failed to create comment: ${error}`);
   }
 }
 
