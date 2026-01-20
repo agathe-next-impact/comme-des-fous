@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { usePathname } from "next/navigation";
 import { SearchInput } from "@/components/posts/search-input";
@@ -483,7 +483,9 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       <header className="staggered-menu-header bg-background" aria-label="Main navigation header">
         <div className="flex items-center gap-4 px-4 w-full">
           <div className="flex-1 max-w-md">
-            <SearchInput forcePostsPage={true} />
+            <Suspense fallback={null}>
+              <SearchInput forcePostsPage={true} />
+            </Suspense>
           </div>
           <button
             ref={toggleBtnRef}
