@@ -3,16 +3,23 @@ import {
   getAllPages,
 } from "@/lib/wordpress";
 import { generateContentMetadata, stripHtml, decodeHtmlEntities } from "@/lib/metadata";
-import { notFound } from "next/navigation";
+import { Section, Container, Prose } from "@/components/craft";
+import Image from "next/image";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
+import Hero from "@/components/hero";
 import PageContent from "@/components/pages/page-content";
 
+// Define the PageWithEmbedded type if not already imported
 type PageWithEmbedded = Awaited<ReturnType<typeof getPageBySlug>> & {
   _embedded?: {
     "wp:featuredmedia"?: Array<any>;
   };
   featured_media?: number;
 };
+
+
+
 
 export async function generateStaticParams() {
   const pages = await getAllPages();
@@ -57,5 +64,21 @@ export default async function Page({
     notFound();
   }
 
-  return <PageContent page={page} />;
+  // Featured media if available
+  const featuredMedia = page.featured_media
+    ? page._embedded?.["wp:featuredmedia"]?.[0]
+    : null;
+
+  return (
+    <div className="mt-14">
+      <Hero
+        titre={decodeHtmlEntities(page.title.rendered)}
+        sousTitre=""
+      />
+
+
+        <PageContent page={page} />
+
+    </div>
+  );
 }
