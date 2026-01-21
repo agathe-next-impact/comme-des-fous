@@ -1,12 +1,18 @@
-import { getPageBySlug, getAllPages } from "@/lib/wordpress";
+import {
+  getPageBySlug,
+  getAllPages,
+} from "@/lib/wordpress";
 import { generateContentMetadata, stripHtml, decodeHtmlEntities } from "@/lib/metadata";
-import { Section, Container, Prose } from "@/components/craft";
 import { notFound } from "next/navigation";
-
 import type { Metadata } from "next";
+import PageContent from "@/components/pages/page-content";
 
-// Revalidate pages every hour
-export const revalidate = 3600;
+type PageWithEmbedded = Awaited<ReturnType<typeof getPageBySlug>> & {
+  _embedded?: {
+    "wp:featuredmedia"?: Array<any>;
+  };
+  featured_media?: number;
+};
 
 export async function generateStaticParams() {
   const pages = await getAllPages();
@@ -31,7 +37,6 @@ export async function generateMetadata({
   const description = page.excerpt?.rendered
     ? stripHtml(page.excerpt.rendered)
     : stripHtml(page.content.rendered).slice(0, 200) + "...";
-
   return generateContentMetadata({
     title: decodeHtmlEntities(page.title.rendered),
     description,
@@ -46,20 +51,11 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const page = await getPageBySlug(slug);
+  const page = await getPageBySlug(slug) as PageWithEmbedded;
 
   if (!page) {
     notFound();
   }
 
-  return (
-    <Section>
-      <Container>
-        <Prose>
-          <h2>{page.title.rendered}</h2>
-          <div dangerouslySetInnerHTML={{ __html: page.content.rendered }} />
-        </Prose>
-      </Container>
-    </Section>
-  );
+  return <PageContent page={page} />;
 }
