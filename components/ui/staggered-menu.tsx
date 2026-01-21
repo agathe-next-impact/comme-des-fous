@@ -79,10 +79,9 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const itemEntranceTweenRef = useRef<gsap.core.Tween | null>(null);
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
-  const isLightTheme = resolvedTheme === "light";
+  const isDarkMode = resolvedTheme === "dark";
 
-  // Couleur du bouton selon la page + mode
-  const isDarkMode = !isLightTheme;
+  // Pages spéciales avec fond coloré (a-lire, a-voir, a-ecouter)
   const isSpecialCategory = [
     "/posts/categories/a-voir",
     "/posts/categories/a-ecouter",
@@ -92,28 +91,14 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     "/a-lire",
   ].some((p) => pathname?.startsWith(p));
 
-  let computedMenuButtonColor = menuButtonColor;
-  let computedOpenMenuButtonColor = openMenuButtonColor;
-  let headerToneClass = '';
+  // En dark mode sur les pages spéciales : texte noir (fond coloré)
+  // Sinon : text-foreground s'adapte automatiquement au thème
+  const headerToneClass = isDarkMode && isSpecialCategory ? 'text-black' : 'text-foreground';
 
-  if (isDarkMode) {
-    // Dark mode: noir seulement sur les pages spéciales, blanc ailleurs
-    const useBlack = isSpecialCategory;
-    computedMenuButtonColor = useBlack ? "#000" : "#fff";
-    computedOpenMenuButtonColor = useBlack ? "#000" : "#fff";
-    headerToneClass = useBlack ? "text-black" : "text-white";
-  } else {
-    // Light mode: noir partout
-    computedMenuButtonColor = "#000";
-    computedOpenMenuButtonColor = "#000";
-    headerToneClass = "text-black";
-  }
-
-  // Forcer l’input de recherche en noir sur les pages spéciales
+  // Forcer l'input de recherche en noir sur les pages spéciales (fond coloré)
   const searchToneClass = isSpecialCategory
     ? "text-black [&_*]:text-black [&_input]:placeholder:text-black"
     : headerToneClass;
-
 
 
   useLayoutEffect(() => {
@@ -138,11 +123,10 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 0, opacity: 0 });
       gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
       gsap.set(textInner, { yPercent: 0 });
-      if (toggleBtnRef.current) gsap.set(toggleBtnRef.current, { color: computedMenuButtonColor });
+      // Couleur du bouton gérée par Tailwind (text-foreground)
     });
     return () => ctx.revert();
-  }, [menuButtonColor, position, computedMenuButtonColor]);
-  // Ajout des couleurs calculées dans les dépendances
+  }, [position]);
 
   const buildOpenTimeline = useCallback(() => {
     const panel = panelRef.current;
@@ -332,34 +316,12 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
   const animateColor = useCallback(
     (opening: boolean) => {
-      const btn = toggleBtnRef.current;
-      if (!btn) return;
+      // La couleur est maintenant gérée par les classes Tailwind (text-foreground)
+      // qui s'adaptent automatiquement au thème via les variables CSS
       colorTweenRef.current?.kill();
-      if (changeMenuColorOnOpen) {
-        const targetColor = opening ? computedOpenMenuButtonColor : computedMenuButtonColor;
-        colorTweenRef.current = gsap.to(btn, {
-          color: targetColor,
-          delay: 0.18,
-          duration: 0.3,
-          ease: 'power2.out'
-        });
-      } else {
-        gsap.set(btn, { color: computedMenuButtonColor });
-      }
     },
-    [computedOpenMenuButtonColor, computedMenuButtonColor, changeMenuColorOnOpen]
+    []
   );
-
-  React.useEffect(() => {
-    if (toggleBtnRef.current) {
-      if (changeMenuColorOnOpen) {
-        const targetColor = openRef.current ? computedOpenMenuButtonColor : computedMenuButtonColor;
-        gsap.set(toggleBtnRef.current, { color: targetColor });
-      } else {
-        gsap.set(toggleBtnRef.current, { color: computedMenuButtonColor });
-      }
-    }
-  }, [changeMenuColorOnOpen, computedMenuButtonColor, computedOpenMenuButtonColor]);
 
   const animateText = useCallback((opening: boolean) => {
     const inner = textInnerRef.current;
@@ -473,7 +435,6 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
             aria-controls="staggered-menu-panel"
             onClick={toggleMenu}
             type="button"
-            style={{ color: computedMenuButtonColor }}
           >
             <span ref={textWrapRef} className={`sm-toggle-textWrap ${headerToneClass}`} aria-hidden="true">
               <span ref={textInnerRef} className="sm-toggle-textInner">
