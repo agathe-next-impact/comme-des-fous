@@ -248,7 +248,6 @@ export function PostCard({
         </h3>
         <div
           className="text-sm"
-          style={{ fontFamily: "Host Grotesk, sans-serif" }}
         >
           {post.excerpt?.rendered ? (
             <DecodeFr>{truncateHtml(post.excerpt.rendered, 32)}</DecodeFr>

@@ -223,7 +223,6 @@ function CoupDeCoeurCard({ item }: { item: BlockItem }) {
             "prose-ul:my-2 prose-ol:my-2",
             "prose-li:my-0.5"
           )}
-          style={{ fontFamily: "Host Grotesk, sans-serif" }}
         >
           {/* CSS pour forcer la couleur des liens (override les styles inline) */}
           <style>{`

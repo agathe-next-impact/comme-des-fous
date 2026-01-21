@@ -1,5 +1,8 @@
 import "./globals.css";
 
+// ✅ Polices Google optimisées avec next/font (préchargement + hébergement local)
+import { Belanosima, Nunito, Fredoka, Quicksand } from "next/font/google";
+
 // Suppression de l'import Head, on utilise le composant <head> natif App Router
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { StaggeredMenu } from "@/components/ui/staggered-menu";
@@ -14,6 +17,35 @@ import { URLRewriter } from "@/components/url-rewriter";
 
 import type { Metadata } from "next";
 import { decodeHtmlEntities } from "@/lib/metadata";
+
+// ✅ Polices principales optimisées
+const belanosima = Belanosima({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-belanosima",
+  display: "swap",
+});
+
+const nunito = Nunito({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-nunito",
+  display: "swap",
+});
+
+const fredoka = Fredoka({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-fredoka",
+  display: "swap",
+});
+
+const quicksand = Quicksand({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-quicksand",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: decodeHtmlEntities(
@@ -45,10 +77,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" suppressHydrationWarning className="overflow-x-hidden">
+    <html 
+      lang="fr" 
+      suppressHydrationWarning 
+      className={cn(
+        "overflow-x-hidden",
+        belanosima.variable,
+        nunito.variable,
+        fredoka.variable,
+        quicksand.variable
+      )}
+    >
       <head>
       </head>
-      <body className={cn("min-h-screen min-w-screen font-sans antialiased")}>
+      <body className={cn("min-h-screen min-w-screen antialiased", nunito.className)}>
         <URLRewriter />   
         <ThemeProvider
           attribute="class"
