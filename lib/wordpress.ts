@@ -39,6 +39,7 @@ export async function getLatestStickyPost(): Promise<Post | undefined> {
 // Types are imported from `wp.d.ts`
 
 import querystring from "query-string";
+import { withCache } from "./cache";
 import type {
   Post,
   Category,
@@ -289,17 +290,19 @@ export async function getAllCategories(): Promise<Category[]> {
 }
 
 export async function getCategoryById(id: number): Promise<Category> {
-  try {
-    return await wordpressFetch<Category>(`/wp-json/wp/v2/categories/${id}`);
-  } catch (err: any) {
-    if (
-      err instanceof WordPressAPIError &&
-      (err.status === 404 || err.status === 500)
-    ) {
-      return undefined as any;
+  return withCache(`category-${id}`, async () => {
+    try {
+      return await wordpressFetch<Category>(`/wp-json/wp/v2/categories/${id}`);
+    } catch (err: any) {
+      if (
+        err instanceof WordPressAPIError &&
+        (err.status === 404 || err.status === 500)
+      ) {
+        return undefined as any;
+      }
+      throw err;
     }
-    throw err;
-  }
+  });
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category> {
@@ -332,17 +335,19 @@ export async function getAllTags(): Promise<Tag[]> {
 }
 
 export async function getTagById(id: number): Promise<Tag> {
-  try {
-    return await wordpressFetch<Tag>(`/wp-json/wp/v2/tags/${id}`);
-  } catch (err: any) {
-    if (
-      err instanceof WordPressAPIError &&
-      (err.status === 404 || err.status === 500)
-    ) {
-      return undefined as any;
+  return withCache(`tag-${id}`, async () => {
+    try {
+      return await wordpressFetch<Tag>(`/wp-json/wp/v2/tags/${id}`);
+    } catch (err: any) {
+      if (
+        err instanceof WordPressAPIError &&
+        (err.status === 404 || err.status === 500)
+      ) {
+        return undefined as any;
+      }
+      throw err;
     }
-    throw err;
-  }
+  });
 }
 
 export async function getTagBySlug(slug: string): Promise<Tag | undefined> {
@@ -394,27 +399,29 @@ export async function getAllAuthors(): Promise<Author[]> {
 }
 
 export async function getAuthorById(id: number): Promise<Author> {
-  try {
-    return await wordpressFetch<Author>(`/wp-json/wp/v2/users/${id}`);
-  } catch (err: any) {
-    if (
-      err instanceof WordPressAPIError &&
-      (err.status === 404 || err.status === 500)
-    ) {
-      // Return a fallback author object if not found or server error
-      return {
-        id,
-        name: "Unknown author",
-        url: "",
-        description: "",
-        link: "",
-        slug: "unknown",
-        avatar_urls: {},
-        meta: {},
-      };
+  return withCache(`author-${id}`, async () => {
+    try {
+      return await wordpressFetch<Author>(`/wp-json/wp/v2/users/${id}`);
+    } catch (err: any) {
+      if (
+        err instanceof WordPressAPIError &&
+        (err.status === 404 || err.status === 500)
+      ) {
+        // Return a fallback author object if not found or server error
+        return {
+          id,
+          name: "Unknown author",
+          url: "",
+          description: "",
+          link: "",
+          slug: "unknown",
+          avatar_urls: {},
+          meta: {},
+        };
+      }
+      throw err;
     }
-    throw err;
-  }
+  });
 }
 
 export async function getAuthorBySlug(slug: string): Promise<Author> {
@@ -759,20 +766,29 @@ function getMediaType(url: string): 'video' | 'podcast' | null {
 /**
  * Scrape la page publique WordPress pour récupérer les iframes vidéo et podcast
  * qui ne sont pas disponibles via l'API REST
+ * ✅ Optimisé avec timeout et cache
  */
 export async function scrapePostEmbeddedMedia(postUrl: string): Promise<{ src: string; title?: string; type?: 'video' | 'podcast' }[]> {
-  try {
-    const response = await fetch(postUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; NextJS/14)',
-      },
-      next: { revalidate: 3600 }
-    });
+  // Utiliser le cache pour éviter les appels répétés
+  return withCache(`scrape-${postUrl}`, async () => {
+    // Timeout de 5 secondes pour éviter les blocages
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
 
-    if (!response.ok) return [];
+    try {
+      const response = await fetch(postUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; NextJS/14)',
+        },
+        next: { revalidate: 3600 },
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
 
-    const html = await response.text();
-    const media: { src: string; title?: string; type?: 'video' | 'podcast' }[] = [];
+      if (!response.ok) return [];
+
+      const html = await response.text();
+      const media: { src: string; title?: string; type?: 'video' | 'podcast' }[] = [];
 
     // Extract ALL iframes - universal approach
     const iframeRegex = /<iframe[^>]*>/gi;
@@ -869,10 +885,16 @@ export async function scrapePostEmbeddedMedia(postUrl: string): Promise<{ src: s
     }
 
     return media;
-  } catch (error) {
-    console.error(`[Scrape] Error scraping ${postUrl}:`, error);
-    return [];
-  }
+    } catch (error: any) {
+      clearTimeout(timeout);
+      if (error.name === 'AbortError') {
+        console.warn(`[Scrape] Timeout scraping ${postUrl}`);
+      } else {
+        console.error(`[Scrape] Error scraping ${postUrl}:`, error);
+      }
+      return [];
+    }
+  });
 }
 
 /**

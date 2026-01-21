@@ -11,10 +11,24 @@ import {
 import { generateContentMetadata, stripHtml, decodeHtmlEntities } from "@/lib/metadata";
 import { Section, Container, Article, Prose } from "@/components/craft";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { PostContent } from "@/components/posts/post-content";
-import { RelatedPosts } from "@/components/posts/related-posts";
-import { CommentsList } from "@/components/posts/comments-list";
-import { CommentForm } from "@/components/posts/comment-form";
+
+// ✅ Lazy loading des composants non critiques pour réduire le bundle initial
+const RelatedPosts = dynamic(
+  () => import("@/components/posts/related-posts").then(mod => ({ default: mod.RelatedPosts })),
+  { loading: () => <div className="h-48 animate-pulse bg-white/5 rounded-lg" /> }
+);
+
+const CommentsList = dynamic(
+  () => import("@/components/posts/comments-list").then(mod => ({ default: mod.CommentsList })),
+  { loading: () => <div className="h-32 animate-pulse bg-white/5 rounded-lg" /> }
+);
+
+const CommentForm = dynamic(
+  () => import("@/components/posts/comment-form").then(mod => ({ default: mod.CommentForm })),
+  { loading: () => <div className="h-24 animate-pulse bg-white/5 rounded-lg" /> }
+);
 
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -64,27 +78,23 @@ export default async function Page({
     notFound();
   }
 
-  const featuredMedia = post.featured_media
-    ? await getFeaturedMediaById(post.featured_media)
-    : null;
-  const author = await getAuthorById(post.author);
+  // ✅ Paralléliser tous les appels indépendants pour améliorer les performances
+  const [featuredMedia, author, category, tags, scrapedMedia, comments] = await Promise.all([
+    post.featured_media ? getFeaturedMediaById(post.featured_media) : null,
+    getAuthorById(post.author),
+    post.categories?.length ? getCategoryById(post.categories[0]) : null,
+    post.tags?.length 
+      ? Promise.all(post.tags.map(tagId => getTagById(tagId))).then(t => t.filter(Boolean))
+      : [],
+    scrapePostEmbeddedMedia(post.link),
+    getPostComments(post.id),
+  ]);
+
   const date = new Date(post.date).toLocaleDateString("fr-FR", {
     month: "long",
     day: "numeric",
     year: "numeric",
   });
-  const category = post.categories?.length ? await getCategoryById(post.categories[0]) : undefined;
-  
-  // Récupérer tous les tags du post
-  const tags = post.tags?.length 
-    ? (await Promise.all(post.tags.map(tagId => getTagById(tagId)))).filter(Boolean)
-    : [];
-
-  // Scraper les médias embarqués depuis la page publique WordPress
-  const scrapedMedia = await scrapePostEmbeddedMedia(post.link);
-
-  // Récupérer les commentaires
-  const comments = await getPostComments(post.id);
 
   return (
     <div className="mt-14">
