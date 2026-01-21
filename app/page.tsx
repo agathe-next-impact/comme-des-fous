@@ -13,6 +13,7 @@ import { extractMediaFromPost } from "@/lib/extract-media";
 import fs from "fs";
 import path from "path";
 import BentoStickers from "@/components/ui/bento-stickers";
+import { StickersGallery } from "@/components/ui/stickers-gallery";
 
 
 export default async function Home() {
@@ -98,7 +99,7 @@ export default async function Home() {
       </Container>
     </Section>
     <Container className="pb-32">
-      <BentoStickers />
+      <StickersGallery images={stickerItems} />
      </Container>
    
     </>

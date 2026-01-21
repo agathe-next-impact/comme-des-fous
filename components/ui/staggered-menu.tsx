@@ -70,9 +70,10 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         window.requestAnimationFrame(() => {
           if (currentY > lastScrollY.current && currentY > 40) {
             setShowHeader(false); // scroll down, hide
-          } else {
-            setShowHeader(true); // scroll up, show
+          } else if (currentY <= 40) {
+            setShowHeader(true); // only show when at top
           }
+          // Sinon, ne rien faire (le header reste caché)
           lastScrollY.current = currentY;
           ticking = false;
         });

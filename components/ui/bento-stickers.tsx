@@ -58,12 +58,17 @@ export default function BentoStickers() {
   return (
     <>
     <div className="w-full border-b border-b-yellow-500 mt-16 mb-8">
-    <h2 className="text-6xl font-title font-medium mb-4">La rue est à nous ! Sainte Anne est à nous !</h2>
+    <h2 className="text-4xl md:text-6xl font-title font-medium mb-4">La rue est à nous ! Sainte Anne est à nous !</h2>
     </div>
-    <div className="w-full px-4 py-8">
-      <div 
-        className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4"
-        style={{ gridAutoFlow: 'dense', gridAutoRows: '150px' }}
+    <div className="w-full px-2 sm:px-4 py-6 sm:py-8">
+      <div
+        className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-4"
+        style={{
+          gridAutoFlow: 'dense',
+          gridAutoRows: '110px',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+        }}
       >
         {stickerImages.map((image, index) => {
           const dims = imageDimensions.get(image);
@@ -106,20 +111,24 @@ export default function BentoStickers() {
           return (
             <div
               key={index}
-              className="relative group p-2"
+              className="relative group p-1 sm:p-2"
               style={{
                 gridColumn: `span ${colSpan}`,
                 gridRow: `span ${rowSpan}`,
+                minWidth: 0,
+                minHeight: 0,
               }}
             >
-              <div className="relative w-full h-full flex items-center justify-center">
                 <img
                   src={image}
                   alt={`Sticker ${index}`}
-                  className="max-w-full max-h-full object-contain rounded-lg group-hover:scale-105 transition-transform duration-300"
-                  style={{ borderRadius: '1.5rem' }}
+                  className="group-hover:scale-105 transition-transform duration-300"
+                  style={{
+                    objectFit: 'contain',
+                    borderRadius: '1.5rem',
+                    background: 'transparent',
+                  }}
                 />
-              </div>
             </div>
           );
         })}
