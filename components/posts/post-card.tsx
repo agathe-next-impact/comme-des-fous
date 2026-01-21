@@ -253,26 +253,32 @@ export function PostCard({
           {post.excerpt?.rendered ? (
             <DecodeFr>{truncateHtml(post.excerpt.rendered, 32)}</DecodeFr>
           ) : (
-            "No excerpt available"
+            ""
           )}
         </div>
       </div>
 
       <div className="flex flex-col gap-4 border-t border-t-white/30 pt-4">
         <div className="flex justify-between items-center text-sm">
-          <p className="text-(--color-red) px-2 py-1 hover:text-white hover:bg-(--color-red) border border-(--color-red) transition-colors">
-            <DecodeFr>{category?.name || "Uncategorized"}</DecodeFr>
-          </p>
+          {category && category.name && (
+            <Link
+              href={`/${category.slug}`}
+              className="text-(--color-red) px-2 py-1 hover:text-white hover:bg-(--color-red) border border-(--color-red) transition-colors"
+            >
+              <DecodeFr>{category.name || "Uncategorized"}</DecodeFr>
+            </Link>
+          )}
         </div>
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {tags.slice(0, 3).map((tag: any) => (
-              <span
+              <Link
                 key={tag.id}
+                href={`/posts/tags/${tag.slug}`}
                 className="text-sm text-(--color-blue) px-2 pt-0.5 pb-1 hover:text-white border border-(--color-blue) hover:bg-(--color-blue) transition-colors"
               >
                 <DecodeFr>{tag.name}</DecodeFr>
-              </span>
+              </Link>
             ))}
           </div>
         )}

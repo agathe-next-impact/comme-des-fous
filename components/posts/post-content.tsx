@@ -405,7 +405,7 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
               <div
                 key={index}
                 className={cn(
-                  "relative p-6 group flex flex-col not-prose",
+                  "relative md:p-6 group flex flex-col not-prose",
                   "border border-white/20",
                   "hover:bg-white/5 transition-all duration-300",
                   "before:absolute before:top-0 before:left-0 before:w-3 before:h-3",
