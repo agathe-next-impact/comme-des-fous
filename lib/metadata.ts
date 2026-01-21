@@ -5,7 +5,30 @@ import type { Post } from "./wordpress.d";
 
 // Décode les entités HTML (&amp;, &#8217;, etc.)
 export function decodeHtmlEntities(str: string): string {
+  if (!str) return "";
   return he.decode(str);
+}
+
+/**
+ * Nettoie et encode correctement le texte pour les métadonnées
+ * Supprime les balises HTML, décode les entités, et normalise les espaces
+ */
+export function sanitizeMetaText(text: string): string {
+  if (!text) return "";
+  
+  // 1. Supprimer les balises HTML
+  let cleaned = text.replace(/<[^>]*>/g, "");
+  
+  // 2. Décoder les entités HTML
+  cleaned = he.decode(cleaned);
+  
+  // 3. Normaliser les espaces (enlever espaces multiples, retours à la ligne)
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+  
+  // 4. Supprimer les caractères de contrôle
+  cleaned = cleaned.replace(/[\x00-\x1F\x7F]/g, "");
+  
+  return cleaned;
 }
 
 /**
@@ -87,7 +110,7 @@ interface ContentMetadataOptions {
   slug: string;
   basePath?: "posts" | "pages";
   imageUrl?: string;
-  content?: Post | any; // ✅ Nouveau : passer le contenu WordPress complet
+  content?: Post | any;
 }
 
 export function generateContentMetadata({
@@ -98,8 +121,9 @@ export function generateContentMetadata({
   imageUrl,
   content,
 }: ContentMetadataOptions): Metadata {
-  const decodedTitle = decodeHtmlEntities(title);
-  const decodedDescription = decodeHtmlEntities(description);
+  // ✅ Nettoyage et encodage correct des textes
+  const cleanTitle = sanitizeMetaText(title);
+  const cleanDescription = sanitizeMetaText(description);
   
   // Construction dynamique de l'URL selon le type de contenu
   const path = basePath ? `/${basePath}/${slug}` : `/${slug}`;
@@ -115,36 +139,33 @@ export function generateContentMetadata({
   // Fallback sur l'image OG générée dynamiquement
   if (!finalImageUrl) {
     const ogUrl = new URL(`${siteConfig.site_domain}/api/og`);
-    ogUrl.searchParams.append("title", decodedTitle);
-    ogUrl.searchParams.append("description", decodedDescription);
+    // ✅ Encoder correctement les paramètres d'URL
+    ogUrl.searchParams.append("title", cleanTitle);
+    ogUrl.searchParams.append("description", cleanDescription);
     finalImageUrl = ogUrl.toString();
   }
 
   return {
-    title: decodedTitle,
-    description: decodedDescription,
+    title: cleanTitle,
+    description: cleanDescription,
     alternates: {
       canonical: fullUrl,
     },
     openGraph: {
-      title: decodedTitle,
-      description: decodedDescription,
+      title: cleanTitle,
+      description: cleanDescription,
       type: "article",
       url: fullUrl,
+      siteName: siteConfig.site_name,
+      locale: "fr_FR",
       images: [
         {
           url: finalImageUrl,
           width: 1200,
           height: 630,
-          alt: decodedTitle,
+          alt: cleanTitle,
         },
       ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: decodedTitle,
-      description: decodedDescription,
-      images: [finalImageUrl],
     },
   };
 }
@@ -155,7 +176,7 @@ export function stripHtml(html: string): string {
 }
 
 export function truncateHtml(html: string, maxWords: number): string {
-  const text = stripHtml(html);
+  const text = sanitizeMetaText(html);
   const words = text.split(/\s+/);
   if (words.length <= maxWords) return text;
   return words.slice(0, maxWords).join(" ") + "...";
