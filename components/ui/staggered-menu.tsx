@@ -93,18 +93,38 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     );
   });
 
-  // Couleur du bouton selon la page
+  // Couleur du bouton selon la page + mode
+  const isDarkMode = !isLightTheme;
+  const isSpecialCategory =
+    pathname === "/a-voir" ||
+    pathname === "/a-ecouter" ||
+    pathname === "/a-lire";
+
   let computedMenuButtonColor = menuButtonColor;
   let computedOpenMenuButtonColor = openMenuButtonColor;
-  const forceBlack =
-    isLightTheme ||
-    pathname === "/posts/categories/a-voir" ||
-    pathname === "/posts/categories/a-ecouter" ||
-    pathname === "/posts/categories/a-lire";
-  if (forceBlack) {
+  let headerToneClass = '';
+
+  if (isDarkMode) {
+    if (isSpecialCategory) {
+      computedMenuButtonColor = "#000";
+      computedOpenMenuButtonColor = "#000";
+      headerToneClass = "text-black";
+    } else {
+      computedMenuButtonColor = "#fff";
+      computedOpenMenuButtonColor = "#fff";
+      headerToneClass = "text-white";
+    }
+  } else {
+    // Light mode: partout en noir
     computedMenuButtonColor = "#000";
     computedOpenMenuButtonColor = "#000";
+    headerToneClass = "text-black";
   }
+
+  // Forcer l’input de recherche en noir sur les pages spéciales
+  const searchToneClass = isSpecialCategory
+    ? "text-black [&_*]:text-black [&_input]:placeholder:text-black"
+    : headerToneClass;
 
   // Observe theme changes (class or data-theme toggled by ThemeProvider)
   React.useEffect(() => {
@@ -166,7 +186,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       if (toggleBtnRef.current) gsap.set(toggleBtnRef.current, { color: computedMenuButtonColor });
     });
     return () => ctx.revert();
-  }, [menuButtonColor, position, forceBlack]);
+  }, [menuButtonColor, position, computedMenuButtonColor]);
   // Ajout des couleurs calculées dans les dépendances
 
   const buildOpenTimeline = useCallback(() => {
@@ -480,16 +500,19 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           return arr.map((c, i) => <div key={i} className="sm-prelayer" style={{ background: c }} />);
         })()}
       </div>
-      <header className="staggered-menu-header bg-background" aria-label="Main navigation header">
+      <header
+        className={`staggered-menu-header bg-background ${headerToneClass}`}
+        aria-label="Main navigation header"
+      >
         <div className="flex items-center gap-4 px-4 w-full">
-          <div className="flex-1 max-w-md">
+          <div className={`flex-1 max-w-md ${searchToneClass}`}>
             <Suspense fallback={null}>
               <SearchInput forcePostsPage={true} />
             </Suspense>
           </div>
           <button
             ref={toggleBtnRef}
-            className="sm-toggle md:text-3xl h-18 min-w-[3rem] flex items-end justify-end ml-auto mt-4"
+            className={`sm-toggle md:text-3xl h-18 min-w-[3rem] flex items-end justify-end ml-auto mt-4 ${headerToneClass}`}
             aria-label={open ? 'Close MENU' : 'Open MENU'}
             aria-expanded={open}
             aria-controls="staggered-menu-panel"
