@@ -295,7 +295,7 @@ html {
   right: 0;
   width: clamp(260px, 38vw, 420px);
   height: 100vh;
-  background-color: oklch(62.7% 0.194 149.214);
+  background-color: var(--color-red);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   display: flex;
@@ -352,9 +352,9 @@ html {
 
 .sm-socials-title {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.7rem;
   font-weight: 500;
-  color: white;
+  color: black;
 }
 
 .sm-socials-list {
@@ -373,7 +373,7 @@ html {
 }
 
 .sm-socials-list:hover .sm-socials-link {
-  opacity: 0.35;
+  opacity: 0.75;
 }
 
 .sm-socials-list:hover .sm-socials-link:hover {
@@ -485,7 +485,7 @@ html {
   right: 2.8em;
   font-size: 18px;
   font-weight: 400;
-  color: white;
+  color: transparent;
   letter-spacing: 0;
   pointer-events: none;
   user-select: none;

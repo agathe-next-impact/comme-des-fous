@@ -30,13 +30,12 @@ const menuItems = [
   { label: "On aime", ariaLabel: "Coups de coeur", link: "/coups-de-coeur" },
   { label: "BDthèque", ariaLabel: "BDthèque", link: "/bedetheque" },
   { label: "Playlist", ariaLabel: "Playlist", link: "/playlist-musicale-de-fous" },
-  { label: "Liens", ariaLabel: "Liens", link: "/liens" },
 ];
 
 const socialItems = [
-  { label: "Twitter", link: "https://twitter.com" },
-  { label: "GitHub", link: "https://github.com" },
-  { label: "LinkedIn", link: "https://linkedin.com" },
+  { label: "Insta", logo:"/insta-logo.webp", link: "https://www.instagram.com/comme_des_fous/" },
+  { label: "Antipsy Link Tree", logo:"/antipsy-antivalidistes-link-logo.webp", link: "https://linktr.ee/antipsych" },
+  { label: "Groupe Médocs - Autre lieu", logo:"/medoc-autrelieu-logo.png", link: "https://medocs.autrelieu.be/" },
 ];
 
 export default function RootLayout({
@@ -70,7 +69,7 @@ export default function RootLayout({
             changeMenuColorOnOpen={true}
             colors={["#000000", "#000000"]}
             logoUrl="/path-to-your-logo.png"
-            accentColor="#ff6b6b"
+            accentColor="yellow"
           />
           {children}
           <Footer />

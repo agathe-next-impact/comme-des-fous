@@ -4,6 +4,8 @@ import React, { Suspense, useCallback, useLayoutEffect, useRef, useState } from 
 import { gsap } from 'gsap';
 import { usePathname } from "next/navigation";
 import { SearchInput } from "@/components/posts/search-input";
+import Image from "next/image";
+import { useTheme } from "next-themes";
 
 export interface StaggeredMenuItem {
   label: string;
@@ -14,6 +16,7 @@ export interface StaggeredMenuItem {
 export interface StaggeredMenuSocialItem {
   label: string;
   link: string;
+  logo?: React.ReactNode; // Ajout du logo optionnel
 }
 
 export interface StaggeredMenuProps {
@@ -44,7 +47,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   displaySocials = true,
   displayItemNumbering = true,
   className,
-  // logoUrl = '/src/assets/logos/reactbits-gh-white.svg',
+  logoUrl = '',
   menuButtonColor = '#fff',
   openMenuButtonColor = '#fff',
   changeMenuColorOnOpen = true,
@@ -75,47 +78,32 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const busyRef = useRef(false);
   const itemEntranceTweenRef = useRef<gsap.core.Tween | null>(null);
   const pathname = usePathname();
-  const [isLightTheme, setIsLightTheme] = useState(() => {
-    if (typeof document === 'undefined') return false;
-    const body = document.body;
-    const root = document.documentElement;
-    const isExplicitDark =
-      body.classList.contains('dark') ||
-      root.classList.contains('dark') ||
-      body.dataset.theme === 'dark' ||
-      root.dataset.theme === 'dark';
-    if (isExplicitDark) return false;
-    return (
-      body.classList.contains('light') ||
-      root.classList.contains('light') ||
-      body.dataset.theme === 'light' ||
-      root.dataset.theme === 'light'
-    );
-  });
+  const { resolvedTheme } = useTheme();
+  const isLightTheme = resolvedTheme === "light";
 
   // Couleur du bouton selon la page + mode
   const isDarkMode = !isLightTheme;
-  const isSpecialCategory =
-    pathname === "/a-voir" ||
-    pathname === "/a-ecouter" ||
-    pathname === "/a-lire";
+  const isSpecialCategory = [
+    "/posts/categories/a-voir",
+    "/posts/categories/a-ecouter",
+    "/posts/categories/a-lire",
+    "/a-voir",
+    "/a-ecouter",
+    "/a-lire",
+  ].some((p) => pathname?.startsWith(p));
 
   let computedMenuButtonColor = menuButtonColor;
   let computedOpenMenuButtonColor = openMenuButtonColor;
   let headerToneClass = '';
 
   if (isDarkMode) {
-    if (isSpecialCategory) {
-      computedMenuButtonColor = "#000";
-      computedOpenMenuButtonColor = "#000";
-      headerToneClass = "text-black";
-    } else {
-      computedMenuButtonColor = "#fff";
-      computedOpenMenuButtonColor = "#fff";
-      headerToneClass = "text-white";
-    }
+    // Dark mode: noir seulement sur les pages spéciales, blanc ailleurs
+    const useBlack = isSpecialCategory;
+    computedMenuButtonColor = useBlack ? "#000" : "#fff";
+    computedOpenMenuButtonColor = useBlack ? "#000" : "#fff";
+    headerToneClass = useBlack ? "text-black" : "text-white";
   } else {
-    // Light mode: partout en noir
+    // Light mode: noir partout
     computedMenuButtonColor = "#000";
     computedOpenMenuButtonColor = "#000";
     headerToneClass = "text-black";
@@ -126,40 +114,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     ? "text-black [&_*]:text-black [&_input]:placeholder:text-black"
     : headerToneClass;
 
-  // Observe theme changes (class or data-theme toggled by ThemeProvider)
-  React.useEffect(() => {
-    const body = typeof document !== 'undefined' ? document.body : null;
-    const root = typeof document !== 'undefined' ? document.documentElement : null;
-    if (!body || !root) return;
 
-    const computeIsLight = () => {
-      // Priorité : si une classe/data-theme "dark" est présente, on force dark
-      const isExplicitDark =
-        body.classList.contains('dark') ||
-        root.classList.contains('dark') ||
-        body.dataset.theme === 'dark' ||
-        root.dataset.theme === 'dark';
-      if (isExplicitDark) return false;
-      return (
-        body.classList.contains('light') ||
-        root.classList.contains('light') ||
-        body.dataset.theme === 'light' ||
-        root.dataset.theme === 'light'
-      );
-    };
-
-    // Set initial
-    setIsLightTheme(computeIsLight());
-
-    const observer = new MutationObserver(() => {
-      setIsLightTheme(computeIsLight());
-    });
-
-    observer.observe(body, { attributes: true, attributeFilter: ['class', 'data-theme'] });
-    observer.observe(root, { attributes: true, attributeFilter: ['class', 'data-theme'] });
-
-    return () => observer.disconnect();
-  }, []);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -518,8 +473,9 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
             aria-controls="staggered-menu-panel"
             onClick={toggleMenu}
             type="button"
+            style={{ color: computedMenuButtonColor }}
           >
-            <span ref={textWrapRef} className="sm-toggle-textWrap" aria-hidden="true">
+            <span ref={textWrapRef} className={`sm-toggle-textWrap ${headerToneClass}`} aria-hidden="true">
               <span ref={textInnerRef} className="sm-toggle-textInner">
                 {textLines.map((l, i) => (
                   <span className="sm-toggle-line" key={i}>
@@ -557,15 +513,43 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           </ul>
           {displaySocials && socialItems && socialItems.length > 0 && (
             <div className="sm-socials" aria-label="Social links">
-              <h3 className="sm-socials-title">Socials</h3>
+              <h3 className="sm-socials-title">Liens</h3>
               <ul className="sm-socials-list" role="list">
-                {socialItems.map((s, i) => (
-                  <li key={s.label + i} className="sm-socials-item">
-                    <a href={s.link} target="_blank" rel="noopener noreferrer" className="sm-socials-link">
-                      {s.label}
-                    </a>
-                  </li>
-                ))}
+                {socialItems.map((s, i) => {
+                  // Vérifie si le logo est une string non vide et commence par "/" ou "http"
+                  const isValidLogo =
+                    typeof s.logo === "string" &&
+                    s.logo.trim() !== "" &&
+                    (s.logo.startsWith("/") || s.logo.startsWith("http"));
+
+                  return (
+                    <li key={s.label + i} className="sm-socials-item">
+                      <a
+                        href={s.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="sm-socials-link"
+                      >
+                        {isValidLogo ? (
+                          <Image
+                            src={s.logo as string}
+                            alt={s.label}
+                            className="object-contain mr-2 bg-white rounded-xl p-1"
+                            width={64}
+                            height={64}
+                            onError={(e) => {
+                              // Cache l'image si elle échoue à charger
+                              (e.currentTarget as HTMLImageElement).style.display = "none";
+                              // Optionnel : tu pourrais afficher le label ici via un état local si besoin
+                            }}
+                          />
+                        ) : (
+                          <span className="sm-socials-label mr-2">{s.label}</span>
+                        )}
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
