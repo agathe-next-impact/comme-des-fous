@@ -5,6 +5,16 @@ const wordpressUrl = process.env.WORDPRESS_URL;
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  
+  // Augmenter le timeout pour la génération statique
+  staticPageGenerationTimeout: 120,
+  
+  // ✅ Ajouter : forcer le rendu dynamique pour les routes catch-all
+  experimental: {
+    // Permettre la génération dynamique sans erreur 404
+    dynamicIO: true,
+  },
+  
   images: {
     remotePatterns: [
       ...(wordpressHostname

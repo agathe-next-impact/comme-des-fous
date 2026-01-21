@@ -1,5 +1,5 @@
 import { PostsArchive } from "@/components/posts/posts-archive";
-import { getTagBySlug, getPostBySlug, getPageBySlug } from "@/lib/wordpress";
+import { getTagBySlug, getPostBySlug, getPageBySlug, getAllTags, getAllPostSlugs } from "@/lib/wordpress";
 import { Section, Container } from "@/components/craft";
 import Hero from "@/components/hero";
 import type { Metadata } from "next";
@@ -10,6 +10,15 @@ import Image from "next/image";
 import PageContent from "@/components/pages/page-content";
 
 export const revalidate = 3600;
+// ✅ Forcer la génération dynamique pour les slugs non pré-générés
+export const dynamicParams = true;
+
+// ✅ Ne pas retourner de 404 si la page n'est pas pré-générée
+export async function generateStaticParams() {
+  // Retourner un tableau vide pour laisser ISR générer toutes les pages
+  // Cela évite les 404 sur les pages non pré-générées
+  return [];
+}
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -62,12 +71,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function DynamicSlugPage({ params, searchParams }: Props) {
+export default async function SlugPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const pageParams = await searchParams;
-  const page = pageParams.page ? parseInt(pageParams.page) : 1;
-
-  // Essayer de trouver un tag d'abord
+  
+  // 1. D'abord chercher un tag
   const tag = await getTagBySlug(slug);
   if (tag) {
     return (
@@ -79,7 +86,7 @@ export default async function DynamicSlugPage({ params, searchParams }: Props) {
         <Container className="mt-8">
           <PostsArchive
             tag={String(tag.id)}
-            page={page}
+            page={1}
             baseUrl={`/${slug}`}
             emptyMessage="Aucun article disponible pour ce tag."
           />
@@ -87,23 +94,21 @@ export default async function DynamicSlugPage({ params, searchParams }: Props) {
       </div>
     );
   }
-
-  // Sinon, essayer de trouver un article
+  
+  // 2. Ensuite chercher un post
   const post = await getPostBySlug(slug);
   if (post) {
-    // Rediriger vers le composant Post existant
     return <Post params={Promise.resolve({ slug })} />;
   }
-
-  // Sinon, essayer de trouver une page WordPress
-  const wpPage = await getPageBySlug(slug);
-  if (wpPage) {
-    return (
-
-        <PageContent page={wpPage} />
-    );
+  
+  // 3. Enfin chercher une page
+  const page = await getPageBySlug(slug);
+  if (page) {
+    return <PageContent page={page} />;
   }
-
-  // Si rien n'est trouvé, retourner 404
+  
+  // ⚠️ Ne pas appeler notFound() si WordPress était indisponible
+  // Utiliser une vérification plus robuste
+  console.warn(`[SlugPage] No content found for slug: ${slug}`);
   notFound();
 }

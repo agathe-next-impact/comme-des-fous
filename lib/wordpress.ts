@@ -93,7 +93,26 @@ export interface WordPressResponse<T> {
 const USER_AGENT = "Next.js WordPress Client";
 const CACHE_TTL = 3600; // 1 hour
 const MAX_RETRIES = 3;
-const INITIAL_BACKOFF_MS = 500;
+const INITIAL_BACKOFF_MS = 1000; // ⬆️ Augmenté de 500 à 1000ms
+const MAX_CONCURRENT_REQUESTS = 3; // Limite les requêtes simultanées
+
+// Semaphore simple pour limiter la concurrence
+let activeRequests = 0;
+const requestQueue: (() => void)[] = [];
+
+async function withConcurrencyLimit<T>(fn: () => Promise<T>): Promise<T> {
+  while (activeRequests >= MAX_CONCURRENT_REQUESTS) {
+    await new Promise<void>(resolve => requestQueue.push(resolve));
+  }
+  activeRequests++;
+  try {
+    return await fn();
+  } finally {
+    activeRequests--;
+    const next = requestQueue.shift();
+    if (next) next();
+  }
+}
 
 // Core fetch with retry - throws on error after all retries exhausted
 async function wordpressFetch<T>(
@@ -101,51 +120,53 @@ async function wordpressFetch<T>(
   query?: Record<string, any>,
   tags: string[] = ["wordpress"]
 ): Promise<T> {
-  if (!baseUrl) {
-    throw new Error("WordPress URL not configured");
-  }
+  return withConcurrencyLimit(async () => {
+    if (!baseUrl) {
+      throw new Error("WordPress URL not configured");
+    }
 
-  const url = `${baseUrl}${path}${query ? `?${querystring.stringify(query)}` : ""}`;
-  
-  let lastError: Error | null = null;
-  
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    try {
-      const response = await fetch(url, {
-        headers: { "User-Agent": USER_AGENT },
-        next: { tags, revalidate: CACHE_TTL },
-      });
-      
-      if (!response.ok) {
-        throw new WordPressAPIError(
-          `WordPress API request failed: ${response.statusText}`,
-          response.status,
-          url
-        );
-      }
-      
-      return await response.json();
-    } catch (error) {
-      lastError = error as Error;
-      
-      // Ne pas retry pour les erreurs 4xx (sauf 429 rate limit)
-      if (error instanceof WordPressAPIError) {
-        if (error.status >= 400 && error.status < 500 && error.status !== 429) {
-          throw error;
+    const url = `${baseUrl}${path}${query ? `?${querystring.stringify(query)}` : ""}`;
+    
+    let lastError: Error | null = null;
+    
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        const response = await fetch(url, {
+          headers: { "User-Agent": USER_AGENT },
+          next: { tags, revalidate: CACHE_TTL },
+        });
+        
+        if (!response.ok) {
+          throw new WordPressAPIError(
+            `WordPress API request failed: ${response.statusText}`,
+            response.status,
+            url
+          );
+        }
+        
+        return await response.json();
+      } catch (error) {
+        lastError = error as Error;
+        
+        // Ne pas retry pour les erreurs 4xx (sauf 429 rate limit)
+        if (error instanceof WordPressAPIError) {
+          if (error.status >= 400 && error.status < 500 && error.status !== 429) {
+            throw error;
+          }
+        }
+        
+        // Backoff exponentiel avant le prochain essai
+        if (attempt < MAX_RETRIES - 1) {
+          const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
+          console.log(`[WP] Retry ${attempt + 1}/${MAX_RETRIES} for ${path} in ${delay}ms`);
+          await new Promise(r => setTimeout(r, delay));
         }
       }
-      
-      // Backoff exponentiel avant le prochain essai
-      if (attempt < MAX_RETRIES - 1) {
-        const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
-        console.log(`[WP] Retry ${attempt + 1}/${MAX_RETRIES} for ${path} in ${delay}ms`);
-        await new Promise(r => setTimeout(r, delay));
-      }
     }
-  }
-  
-  console.error(`[WP] All ${MAX_RETRIES} retries failed for ${path}`);
-  throw lastError || new Error(`WordPress fetch failed for ${path}`);
+    
+    console.error(`[WP] All ${MAX_RETRIES} retries failed for ${path}`);
+    throw lastError || new Error(`WordPress fetch failed for ${path}`);
+  });
 }
 
 // Graceful fetch - returns fallback when WordPress unavailable or on error
