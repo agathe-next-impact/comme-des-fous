@@ -49,7 +49,7 @@ export default function RootLayout({
       <head>
       </head>
       <body className={cn("min-h-screen min-w-screen font-sans antialiased")}>
-        <URLRewriter />
+        <URLRewriter />   
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
