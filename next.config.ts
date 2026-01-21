@@ -11,8 +11,7 @@ const nextConfig: NextConfig = {
   
   // ✅ Ajouter : forcer le rendu dynamique pour les routes catch-all
   experimental: {
-    // Permettre la génération dynamique sans erreur 404
-    dynamicIO: true,
+    // (dynamicIO option removed - not supported in ExperimentalConfig)
   },
   
   images: {
