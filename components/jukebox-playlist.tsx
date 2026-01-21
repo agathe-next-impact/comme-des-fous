@@ -16,7 +16,7 @@ interface JukeboxPlaylistProps {
   initialRevealCount?: number
 }
 
-function VinylDisc({ isSpinning, className, color = "red" }: { isSpinning: boolean; className?: string; color?: "red" | "yellow" }) {
+function VinylDisc({ isSpinning, className, color = "yellow" }: { isSpinning: boolean; className?: string; color?: "yellow" | "red" }) {
   return (
     <div className={cn("relative", className)}>
       <div
@@ -36,7 +36,7 @@ function VinylDisc({ isSpinning, className, color = "red" }: { isSpinning: boole
         {/* Center label */}
         <div className={cn(
           "w-10 h-10 rounded-full flex items-center justify-center z-10",
-          color === "red" ? "bg-red-500" : "bg-yellow-500"
+          color === "yellow" ? "bg-yellow-400" : "bg-red-500"
         )}>
           <div className="w-2 h-2 rounded-full bg-black" />
         </div>
@@ -79,9 +79,9 @@ function SongSlot({
       onClick={handleClick}
       className={cn(
         "group relative w-full text-left transition-all duration-500",
-        "border border-yellow-500/30 rounded-2xl overflow-hidden",
-        "hover:border-red-500/50 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]",
-        isSelected && "border-red-500 shadow-[0_0_25px_rgba(239,68,68,0.3)]",
+        "border border-white/50 rounded-full overflow-hidden",
+        "hover:border-yellow-400/50 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]",
+        isSelected && "border-yellow-400 shadow-[0_0_25px_rgba(239,68,68,0.3)]",
         !isRevealed && "opacity-0 translate-y-4",
         isRevealed && "opacity-100 translate-y-0"
       )}
@@ -91,13 +91,13 @@ function SongSlot({
         {/* Slot code badge */}
         <div
           className={cn(
-            "flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center",
-            "bg-white/10 text-white font-mono text-sm font-bold",
+            "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center",
+            hasLink ? "bg-red-500 text-red-500 group-hover:bg-yellow-400" : "bg-white text-black group-hover:bg-yellow-400 group-hover:text-yellow-400",
+            "font-mono text-sm font-bold",
             "transition-colors duration-300",
-            isSelected && "bg-red-500 text-white"
+            isSelected && "bg-yellow-400 text-white"
           )}
         >
-          {slotCode}
         </div>
 
         {/* Song info */}
@@ -105,10 +105,10 @@ function SongSlot({
           <p
             className={cn(
               "font-medium truncate text-white",
-              hasLink ? "text-yellow-500 group-hover:text-red-500" : "group-hover:text-white",
+              hasLink ? "text-red-500 group-hover:text-yellow-400" : "group-hover:text-yellow-400",
               "transition-colors",
-              isSelected && "text-red-500",
-              hasLink && "underline decoration-dotted decoration-red-500/60"
+              isSelected && "text-yellow-400",
+              hasLink && ""
             )}
           >
             {song.title}
@@ -116,7 +116,7 @@ function SongSlot({
           <p
             className={cn(
               "text-sm text-white/50 truncate",
-              hasLink && "underline decoration-dotted decoration-red-500/40"
+              hasLink && ""
             )}
           >
             {song.artist}
@@ -132,8 +132,8 @@ function SongSlot({
             onClick={(e) => e.stopPropagation()}
             className={cn(
               "flex-shrink-0 p-2 rounded-2xl",
-              "text-yellow-500 group-hover:text-red-500 hover:bg-red-500/10",
-              isSelected && "text-red-500",
+              "text-red-500 group-hover:text-yellow-400 hover:bg-yellow-400/10",
+              isSelected && "text-yellow-400",
               "transition-all duration-300"
             )}
             aria-label={`Ecouter ${song.title}`}
@@ -148,7 +148,7 @@ function SongSlot({
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="w-1 bg-red-500 rounded-full animate-pulse"
+                className="w-1 bg-yellow-400 rounded-full animate-pulse"
                 style={{
                   height: `${8 + Math.random() * 8}px`,
                   animationDelay: `${i * 150}ms`,
@@ -189,11 +189,11 @@ export function JukeboxPlaylist({
       <div className="relative mb-8">
         {/* Neon-style title */}
         <div className="flex items-center justify-center gap-4 mb-6">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-red-500/50 to-transparent" />
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-yellow-400/50 to-transparent" />
           <div className="relative">
-            <div className="absolute inset-0 blur-lg bg-red-500/20 -z-10" />
+            <div className="absolute inset-0 blur-lg bg-yellow-400/20 -z-10" />
           </div>
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-red-500/50 to-transparent" />
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-yellow-400/50 to-transparent" />
         </div>
 
         {/* Vinyl and decorations */}
@@ -212,7 +212,7 @@ export function JukeboxPlaylist({
                   className={cn(
                     "w-2 h-8 rounded-full transition-all duration-300",
                     selectedIndex !== null
-                      ? "bg-yellow-500 animate-pulse"
+                      ? "bg-yellow-400 animate-pulse"
                       : "bg-white/20"
                   )}
                   style={{
@@ -253,7 +253,7 @@ export function JukeboxPlaylist({
                 className={cn(
                   "group flex items-center gap-2 px-6 py-3 rounded-full",
                   "bg-white/10 text-white",
-                  "hover:bg-red-500 hover:text-white",
+                  "hover:bg-yellow-400 hover:text-white",
                   "transition-all duration-300",
                   "hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]"
                 )}
@@ -268,7 +268,7 @@ export function JukeboxPlaylist({
                 onClick={revealAll}
                 className={cn(
                   "px-4 py-3 rounded-full",
-                  "text-white/50 hover:text-yellow-500",
+                  "text-white/50 hover:text-yellow-400",
                   "transition-colors duration-300",
                   "underline-offset-4 hover:underline"
                 )}
