@@ -8,7 +8,7 @@ export default function TopBar() {
   const pathname = usePathname();
   return (
 
-  <nav className="w-full bg-black border-b border-white/30 shadow-sm flex justify-between items-center text-sm md:text-base font-sans fixed top-0 left-0 z-50">
+  <nav className="w-full h-8 bg-black  border-white/30 flex justify-between items-center text-sm md:text-base font-sans fixed top-0 left-0 z-50">
 
     <Link
       href="/"

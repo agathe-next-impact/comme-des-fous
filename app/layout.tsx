@@ -6,6 +6,7 @@ import { StaggeredMenu } from "@/components/ui/staggered-menu";
 import { Footer } from "@/components/layout/footer";
 import TopBar from "@/components/layout/topbar";
 import { Analytics } from "@vercel/analytics/react";
+import BeatLoader from "react-spinners/BeatLoader";
 
 import { siteConfig } from "@/site.config";
 import { cn } from "@/lib/utils";
@@ -77,5 +78,13 @@ export default function RootLayout({
         <Analytics />
       </body>
     </html>
+  );
+}
+
+export function Loading() {
+  return (
+    <div className="flex justify-center items-center min-h-[40vh]">
+      <BeatLoader color="#fff" />
+    </div>
   );
 }
