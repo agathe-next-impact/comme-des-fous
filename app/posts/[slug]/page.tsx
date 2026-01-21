@@ -38,11 +38,17 @@ export async function generateMetadata({
     return {};
   }
 
+  // Extraction de l'URL de l'image mise en avant via les données embedded
+  const imageUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
+
   return generateContentMetadata({
-    title: decodeHtmlEntities(post.title.rendered),
-    description: stripHtml(post.excerpt.rendered),
+    title: post.title.rendered,
+    description: post.excerpt?.rendered 
+      ? stripHtml(post.excerpt.rendered) 
+      : stripHtml(post.content.rendered).slice(0, 200) + "...",
     slug: post.slug,
     basePath: "posts",
+    imageUrl, // On passe l'URL ici
   });
 }
 
