@@ -9,8 +9,8 @@ export function Footer() {
   return (
     <footer>
       <Section>
-        <Container className="grid md:grid-cols-[1.5fr_1fr] gap-12 pb-8">
-          <div className="flex flex-col gap-6 not-prose">
+        <Container className="grid md:grid-cols-[1.5fr_1fr] gap-2 md:gap-12 pb-8">
+          <div className="flex flex-col gap-3 md:gap-6 not-prose">
             <Link href="/">
               <h3 className="sr-only">{siteConfig.site_name}</h3>
               <Image
@@ -22,7 +22,7 @@ export function Footer() {
             </Link>
             <p className="font-title text-2xl font-medium">Changer les regards sur la folie</p>
           </div>
-          <div className="flex justify-end items-end gap-4">2025 Comme des fous. Tous droits réservés.</div>
+          <div className="flex md:justify-end items-end gap-4">Comme des fous. Tous droits réservés.</div>
 
         </Container>
         <Container className="border-t not-prose flex flex-col md:flex-row md:gap-2 gap-6 justify-between md:items-center pt-4">

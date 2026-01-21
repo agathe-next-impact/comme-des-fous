@@ -58,6 +58,30 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   onMenuClose,
 }: StaggeredMenuProps) => {
   const [open, setOpen] = useState(false);
+  // Header hide/show on scroll
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  React.useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (currentY > lastScrollY.current && currentY > 40) {
+            setShowHeader(false); // scroll down, hide
+          } else {
+            setShowHeader(true); // scroll up, show
+          }
+          lastScrollY.current = currentY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const openRef = useRef(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const preLayersRef = useRef<HTMLDivElement | null>(null);
@@ -418,8 +442,9 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         })()}
       </div>
       <header
-        className={`staggered-menu-header bg-background ${headerToneClass}`}
+        className={`staggered-menu-header bg-background ${headerToneClass} transition-transform duration-300 ${showHeader ? 'translate-y-0' : '-translate-y-full'}`}
         aria-label="Main navigation header"
+        style={{ willChange: 'transform' }}
       >
         <div className="flex items-center gap-4 px-4 w-full">
           <div className={`flex-1 max-w-md ${searchToneClass}`}>
