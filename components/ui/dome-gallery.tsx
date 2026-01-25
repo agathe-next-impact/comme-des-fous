@@ -666,7 +666,7 @@ export default function DomeGallery({
 
   return (
     <>
-    <div className='w-full border-b border-b-blue-500 mt-24'>
+    <div className='w-full border-b border-b-blue-500 my-24'>
       <h2 className="text-5xl md:text-6xl font-title font-medium mb-4">Hall of Fame</h2>
     </div>
     <div className='w-[calc(100vw - 20px)] h-screen'>

@@ -1,41 +1,4 @@
-/* ✅ Les polices Google sont maintenant chargées via next/font dans layout.tsx
-   pour de meilleures performances (préchargement, hébergement local, pas de FOUT) */
 
-/* Light/Dark mode inversion (seulement blanc/noir) */
-.light {
-  --bg-main: #fff;
-  --text-main: #000;
-}
-.dark {
-  --bg-main: #000;
-  --text-main: #fff;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  background-color: var(--bg-main);
-  color: var(--text-main);
-  overflow-y: scroll !important;
-}
-
-/* Empêcher Radix UI de cacher la scrollbar */
-html {
-  overflow-y: scroll !important;
-}
-
-
-/* Utilisation dans les composants :
-   bg-[var(--bg-main)] text-[var(--text-main)]
-   ou via className="bg-[var(--bg-main)] text-[var(--text-main)]" dans Tailwind
-*/
-/* Supprime le padding du header quand le menu est ouvert */
-.staggered-menu-wrapper[data-open] .staggered-menu-header {
-  padding-top: 0;
-  padding-bottom: 0;
-}
 @import "tailwindcss";
 
 /*
@@ -144,6 +107,10 @@ html {
       overflow-x: hidden; 
       background-color: #000;
       color: white;
+    }
+
+    .prose {
+      font-family: 'Open Sans', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     }
 }
 
@@ -758,3 +725,41 @@ body {
 }
 
 
+/* ✅ Les polices Google sont maintenant chargées via next/font dans layout.tsx
+   pour de meilleures performances (préchargement, hébergement local, pas de FOUT) */
+
+/* Light/Dark mode inversion (seulement blanc/noir) */
+.light {
+  --bg-main: #fff;
+  --text-main: #000;
+}
+.dark {
+  --bg-main: #000;
+  --text-main: #fff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  overflow-y: scroll !important;
+}
+
+/* Empêcher Radix UI de cacher la scrollbar */
+html {
+  overflow-y: scroll !important;
+}
+
+
+/* Utilisation dans les composants :
+   bg-[var(--bg-main)] text-[var(--text-main)]
+   ou via className="bg-[var(--bg-main)] text-[var(--text-main)]" dans Tailwind
+*/
+/* Supprime le padding du header quand le menu est ouvert */
+.staggered-menu-wrapper[data-open] .staggered-menu-header {
+  padding-top: 0;
+  padding-bottom: 0;
+}

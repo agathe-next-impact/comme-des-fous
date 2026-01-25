@@ -146,7 +146,7 @@ export default async function CoupsDeCoeurPage() {
 
   return (
     <div className="md:mt-14">
-      <Hero titre={page.title.rendered} sousTitre={headerContent} />
+      <Hero titre="On aime" sousTitre={headerContent} />
 
       {/* Grille de coups de cœur */}
       {items.length > 0 && (

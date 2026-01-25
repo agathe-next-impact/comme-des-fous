@@ -71,7 +71,7 @@ export default async function Page({
 
   return (
     <div className="mt-4">
-      <Hero titre="CdF" sousTitre="Changons les regards sur la folie"/>
+      <Hero titre="CdF" sousTitre="Changeons les regards sur la folie"/>
         <Container>
           <div className="space-y-8">
             <FilterPosts

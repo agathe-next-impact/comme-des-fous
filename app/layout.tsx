@@ -1,7 +1,7 @@
 import "./globals.css";
 
 // ✅ Polices Google optimisées avec next/font (préchargement + hébergement local)
-import { Belanosima, Nunito, Fredoka, Quicksand } from "next/font/google";
+import { Belanosima, Nunito, Fredoka, Quicksand, Open_Sans } from "next/font/google";
 
 // Suppression de l'import Head, on utilise le composant <head> natif App Router
 import { ThemeProvider } from "@/components/theme/theme-provider";
@@ -44,6 +44,13 @@ const quicksand = Quicksand({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-quicksand",
+  display: "swap",
+});
+
+const openSans = Open_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-open-sans",
   display: "swap",
 });
 
@@ -90,7 +97,7 @@ export default function RootLayout({
     >
       <head>
       </head>
-      <body className={cn("min-h-screen min-w-screen antialiased", nunito.className)}>
+      <body className={cn("min-h-screen min-w-screen antialiased", openSans.className)}>
         <URLRewriter />   
         <ThemeProvider
           attribute="class"

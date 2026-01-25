@@ -25,8 +25,7 @@ export async function RelatedPosts({ categoryId, currentPostId }: RelatedPostsPr
     }
 
     return (
-      <Section>
-        <Container>
+      <div>
           <div className="mt-12">
             <h3 className="text-2xl font-bold mb-8">À voir aussi</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -35,8 +34,7 @@ export async function RelatedPosts({ categoryId, currentPostId }: RelatedPostsPr
               ))}
             </div>
           </div>
-        </Container>
-      </Section>
+        </div>
     );
   } catch (error) {
     console.error("Error fetching related posts:", error);

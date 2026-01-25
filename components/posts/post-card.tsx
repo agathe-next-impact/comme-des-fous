@@ -174,7 +174,7 @@ export function PostCard({
       href={`/posts/${post.slug}`}
       className={cn(
         "relative p-6 group flex justify-between flex-col not-prose gap-8",
-        "border-r border-b border-white/20",
+        "border border-white/20",
         "hover:bg-white/5 transition-all duration-300",
         "before:absolute before:top-0 before:left-0 before:w-3 before:h-3",
         "before:border-t-2 before:border-l-2 before:border-yellow-500",

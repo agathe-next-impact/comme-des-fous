@@ -25,7 +25,7 @@ export function Footer() {
           <div className="flex md:justify-end items-end gap-4">
             <Link href="https://www.instagram.com/comme_des_fous/" target="_blank" rel="noopener noreferrer" aria-label="Instagram Comme des Fous">
             <Image
-              src="/icons/logo-insta.png"
+              src="/icons/logo-insta.jpg"
               alt="Illustration Footer"
               width={50}
               height={50}

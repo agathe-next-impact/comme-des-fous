@@ -94,11 +94,13 @@ export function FilterPosts({
           {hasTags && (
             <SelectContent>
               <SelectItem value="all">Tags</SelectItem>
-              {tags.map((tag) => (
-                <SelectItem key={tag.id} value={tag.id.toString()}>
-                  {tag.name}
-                </SelectItem>
-              ))}
+              {[...tags]
+                .sort((a, b) => b.count - a.count)
+                .map((tag) => (
+                  <SelectItem key={tag.id} value={tag.id.toString()}>
+                    {tag.name} ({tag.count})
+                  </SelectItem>
+                ))}
             </SelectContent>
           )}
         </Select>
@@ -116,11 +118,13 @@ export function FilterPosts({
           {hasCategories && (
             <SelectContent>
               <SelectItem value="all">Categories</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id.toString()}>
-                  {category.name}
-                </SelectItem>
-              ))}
+              {[...categories]
+                .sort((a, b) => b.count - a.count)
+                .map((category) => (
+                  <SelectItem key={category.id} value={category.id.toString()}>
+                    {category.name} ({category.count})
+                  </SelectItem>
+                ))}
             </SelectContent>
           )}
         </Select>

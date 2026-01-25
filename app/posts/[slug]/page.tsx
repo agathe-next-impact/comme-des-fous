@@ -103,8 +103,8 @@ export default async function Page({
           sousTitre=""
         />
 
-          <Container className="mt-4 md:mt-8">
-              <div className="flex items-center justify-between gap-4 md:mb-4">
+          <Container className="w-full mt-4 md:mt-8">
+              <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 md:mb-4">
                 <div>
                 <div className="flex justify-between items-center gap-4 mb-4 pb-4">
                   <div className="flex gap-2 items-center">
@@ -130,13 +130,13 @@ export default async function Page({
                   </div>
                 )}
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className="w-full flex justify-end">
                 <Image
                   src={featuredMedia?.source_url || "/logo.png"}
                   alt={featuredMedia?.alt_text || "Featured media"}
                   width={250}
                   height={250}
-                  className="object-cover rounded-md"
+                  className="w-full md:w-fit object-cover rounded-md"
                 />
               </div>
               </div>

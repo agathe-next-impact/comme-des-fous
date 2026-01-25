@@ -380,7 +380,7 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
         ref={contentRef}
         className={cn(
           "post-content",
-          "max-w-4xl mx-auto p-8",
+          "max-w-6xl mx-auto py-8",
           "prose prose-lg dark:prose-invert",
           "prose-headings:font-bold prose-headings:tracking-tight prose-headings:mt-12 prose-headings:mb-6 prose-headings:leading-tight",
           "prose-p:mb-6",
@@ -398,14 +398,14 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
       />
 
       {media.length > 0 && (
-        <div className="max-w-4xl mx-auto mt-12 border-t border-white/20 pt-8">
+        <div className="max-w-6xl mx-auto mt-12 border-t border-white/20 pt-8">
           <h3 className="text-2xl font-bold mb-6">Médias</h3>
           <div className="grid grid-cols-1 gap-6">
             {media.map((item, index) => (
               <div
                 key={index}
                 className={cn(
-                  "relative md:p-6 group flex flex-col not-prose",
+                  "relative md:py-6 group flex flex-col not-prose",
                   "border border-white/20",
                   "hover:bg-white/5 transition-all duration-300",
                   "before:absolute before:top-0 before:left-0 before:w-3 before:h-3",
@@ -451,12 +451,14 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
                   /* Rendu pour vidéos, podcasts et embeds sociaux */
                   <>
                     <div className={cn(
-                      "relative w-full",
+                      "relative",
                       item.type === 'podcast'
-                        ? 'aspect-[3/1]'
-                        : item.type === 'social'
-                          ? 'aspect-[4/5]'
-                          : 'aspect-video'
+                        ? 'w-full aspect-[3/1]'
+                        : item.type === 'social' && item.platform === 'instagram'
+                          ? 'w-1/2 aspect-square'
+                          : item.type === 'social'
+                            ? 'w-full aspect-[4/5]'
+                            : 'w-full aspect-video'
                     )}>
                       <iframe
                         src={item.src}

@@ -1,6 +1,7 @@
 import React from "react";
 import { DecodeFr } from "./decode-fr";
 import Link from "next/link";
+import { truncateHtml } from "@/lib/utils";
 
 
 
@@ -53,7 +54,7 @@ export const LastArticleSection: React.FC<LastArticleSectionProps> = ({ article 
           <Link href={article.link} className="hover:underline">
             <h2 className="text-2xl md:text-4xl font-title font-normal leading-snug letter-spacing-widest group-hover:underline mb-2"><DecodeFr>{article.title}</DecodeFr></h2>
           </Link>
-          <p className="text-base text-muted-foreground mb-4"><DecodeFr>{article.excerpt}</DecodeFr></p>
+          <p className="text-base text-muted-foreground mb-4"><DecodeFr>{truncateHtml(article.excerpt, 40)}</DecodeFr></p>
         </div>
         <div>
             <div className="flex flex-wrap gap-2">

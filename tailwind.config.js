@@ -10,12 +10,12 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: [
-          'Averia Sans Libre',
+          'Open Sans',
           'ui-sans-serif',
           'system-ui',
           'sans-serif',
         ],
-        averia: ['Averia Sans Libre', 'sans-serif'],
+        averia: ['Open Sans', 'sans-serif'],
         belanosima: ['Belanosima', 'sans-serif'],
       },
     },
