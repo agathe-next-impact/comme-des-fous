@@ -97,14 +97,14 @@ export default async function Page({
   });
 
   return (
-    <div className="mt-14">
+    <div className="md:mt-14">
         <Hero
           titre={decodeHtmlEntities(post.title.rendered)}
           sousTitre=""
         />
 
-          <Container className="mt-8">
-              <div className="flex items-center justify-between gap-4 mb-4">
+          <Container className="mt-4 md:mt-8">
+              <div className="flex items-center justify-between gap-4 md:mb-4">
                 <div>
                 <div className="flex justify-between items-center gap-4 mb-4 pb-4">
                   <div className="flex gap-2 items-center">

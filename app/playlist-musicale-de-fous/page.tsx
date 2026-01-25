@@ -109,10 +109,10 @@ export default async function PlaylistMusicaleDeFousPage() {
 		.filter((song) => song.title.length > 0 || song.artist.length > 0);
 
 	return (
-		<div className="mt-14">
+		<div className="md:mt-14">
 			<Hero titre={page.title.rendered} sousTitre={""} />
 
-                <div className="max-w-4xl mx-auto px-4 pt-16 pb-8">
+                <div className="max-w-4xl mx-auto px-4 md:pt-16 md:pb-8">
 				{youtubeSrc && (
 					<div
 						className={cn(

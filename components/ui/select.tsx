@@ -20,7 +20,7 @@ const SelectTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       // Light/dark mode styles
-      "flex h-10 w-full items-center justify-start px-3 py-2",
+      "select-trigger flex h-10 w-full items-center justify-start px-3 py-2",
       "transition-all duration-200 ease-out",
       "bg-[var(--bg-main)] text-[var(--text-main)] border border-[var(--border,theme(colors.zinc.200))]",
       "hover:bg-[var(--bg-main)] focus:bg-[var(--bg-main)]",

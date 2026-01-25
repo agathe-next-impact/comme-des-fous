@@ -66,9 +66,9 @@ const menuItems = [
 ];
 
 const socialItems = [
-  { label: "Insta", logo:"/insta-logo.webp", link: "https://www.instagram.com/comme_des_fous/" },
-  { label: "Antipsy Link Tree", logo:"/antipsy-antivalidistes-link-logo.webp", link: "https://linktr.ee/antipsych" },
-  { label: "Groupe Médocs - Autre lieu", logo:"/medoc-autrelieu-logo.png", link: "https://medocs.autrelieu.be/" },
+  { label: "Insta", logo:"/icons/logo-insta.png", link: "https://www.instagram.com/comme_des_fous/" },
+  { label: "Antipsy Link Tree", logo:"/icons/antipsy-antivalidistes-link-logo.webp", link: "https://linktr.ee/antipsych" },
+  { label: "Groupe Médocs - Autre lieu", logo:"/icons/medoc-autrelieu-logo.png", link: "https://medocs.autrelieu.be/" },
 ];
 
 export default function RootLayout({

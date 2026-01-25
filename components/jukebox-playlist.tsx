@@ -79,20 +79,24 @@ function SongSlot({
       onClick={handleClick}
       className={cn(
         "group relative w-full text-left transition-all duration-500",
-        "border border-white/50 rounded-full overflow-hidden",
-        "hover:border-yellow-400/50 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]",
-        isSelected && "border-yellow-400 shadow-[0_0_25px_rgba(239,68,68,0.3)]",
+        "border border-slate-300 dark:border-white/50 rounded-full overflow-hidden",
+        "bg-white dark:bg-black",              // force fond blanc (light) / noir (dark)
+        "hover:border-yellow-500/60 hover:shadow-[0_0_20px_rgba(234,179,8,0.25)]",
+        isSelected && "border-yellow-500 shadow-[0_0_25px_rgba(234,179,8,0.35)]",
         !isRevealed && "opacity-0 translate-y-4",
         isRevealed && "opacity-100 translate-y-0"
       )}
       style={{ transitionDelay: isRevealed ? `${index * 80}ms` : "0ms" }}
     >
-      <div className="flex items-center gap-3 p-3 bg-black">
+      <div className="flex items-center gap-3 p-3">
         {/* Slot code badge */}
         <div
           className={cn(
             "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center",
-            hasLink ? "bg-red-500 text-red-500 group-hover:bg-yellow-400" : "bg-white text-black group-hover:bg-yellow-400 group-hover:text-yellow-400",
+            "bg-white dark:bg-black", // fond light/dark conservé
+            hasLink
+              ? "text-red-500 group-hover:text-yellow-900"
+              : "text-slate-900 group-hover:text-yellow-900",
             "font-mono text-sm font-bold",
             "transition-colors duration-300",
             isSelected && "bg-yellow-400 text-white"
@@ -104,19 +108,19 @@ function SongSlot({
         <div className="flex-1 min-w-0">
           <p
             className={cn(
-              "font-medium truncate text-white",
-              hasLink ? "text-red-500 group-hover:text-yellow-400" : "group-hover:text-yellow-400",
+              "font-medium truncate",
+              "text-slate-900 dark:text-white",
+              hasLink ? "text-red-500 dark:text-red-400 group-hover:text-yellow-500" : "group-hover:text-yellow-500",
               "transition-colors",
-              isSelected && "text-yellow-400",
-              hasLink && ""
+              isSelected && "text-yellow-500"
             )}
           >
             {song.title}
           </p>
           <p
             className={cn(
-              "text-sm text-white/50 truncate",
-              hasLink && ""
+              "text-sm truncate",
+              "text-slate-500 dark:text-white/50"
             )}
           >
             {song.artist}
@@ -132,8 +136,8 @@ function SongSlot({
             onClick={(e) => e.stopPropagation()}
             className={cn(
               "flex-shrink-0 p-2 rounded-2xl",
-              "text-red-500 group-hover:text-yellow-400 hover:bg-yellow-400/10",
-              isSelected && "text-yellow-400",
+              "text-red-500 dark:text-red-400 group-hover:text-yellow-500 hover:bg-yellow-400/10",
+              isSelected && "text-yellow-500",
               "transition-all duration-300"
             )}
             aria-label={`Ecouter ${song.title}`}
@@ -184,7 +188,7 @@ export function JukeboxPlaylist({
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto text-slate-900 dark:text-white">
       {/* Jukebox Header */}
       <div className="relative mb-8">
         {/* Neon-style title */}
@@ -201,7 +205,7 @@ export function JukeboxPlaylist({
           <VinylDisc isSpinning={selectedIndex !== null} color="red" className="hidden sm:block" />
           
           <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center gap-2 text-white/50">
+            <div className="flex items-center gap-2 dark:text-gray-500">
               <Music className="w-5 h-5" />
               <span className="text-sm font-medium">{songs.length} titres</span>
             </div>
@@ -213,7 +217,7 @@ export function JukeboxPlaylist({
                     "w-2 h-8 rounded-full transition-all duration-300",
                     selectedIndex !== null
                       ? "bg-yellow-400 animate-pulse"
-                      : "bg-white/20"
+                      : "bg-gray-500"
                   )}
                   style={{
                     animationDelay: `${i * 100}ms`,
@@ -230,8 +234,7 @@ export function JukeboxPlaylist({
 
       {/* Song List */}
       <div className="relative">
-
-        <div className="space-y-2 p-4">
+        <div className="space-y-2 p-4 bg-white/60 dark:bg-transparent rounded-2xl">
           {visibleSongs.map((song, index) => (
             <SongSlot
               key={`${song.title}-${song.artist}`}
@@ -246,21 +249,21 @@ export function JukeboxPlaylist({
 
         {/* Reveal Controls */}
         {hasMoreSongs && (
-          <div className="border-t border-white/10 p-4">
+          <div className="border-t border-slate-200 dark:border-white/10 p-4 bg-white/60 dark:bg-transparent rounded-b-2xl">
             <div className="flex items-center justify-center gap-4">
               <button
                 onClick={revealMore}
                 className={cn(
                   "group flex items-center gap-2 px-6 py-3 rounded-full",
-                  "bg-white/10 text-white",
+                  "bg-yellow-400 text-white dark:bg-white/10",
                   "hover:bg-yellow-400 hover:text-white",
                   "transition-all duration-300",
-                  "hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]"
+                  "hover:shadow-[0_0_20px_rgba(234,179,8,0.35)]"
                 )}
               >
                 <ChevronDown className="w-5 h-5 group-hover:animate-bounce" />
                 <span className="font-medium">
-                  Decouvrir plus ({remainingCount} restants)
+                  Découvrir plus ({remainingCount} restants)
                 </span>
               </button>
 
@@ -268,7 +271,7 @@ export function JukeboxPlaylist({
                 onClick={revealAll}
                 className={cn(
                   "px-4 py-3 rounded-full",
-                  "text-white/50 hover:text-yellow-400",
+                  "text-slate-700 dark:text-white/50 hover:text-yellow-500",
                   "transition-colors duration-300",
                   "underline-offset-4 hover:underline"
                 )}
@@ -281,16 +284,14 @@ export function JukeboxPlaylist({
 
         {/* All revealed indicator */}
         {!hasMoreSongs && revealedCount > initialRevealCount && (
-          <div className="border-t border-white/10 p-4">
-            <div className="flex items-center justify-center gap-2 text-white/50">
+          <div className="border-t border-slate-200 dark:border-white/10 p-4 bg-white/60 dark:bg-transparent rounded-b-2xl">
+            <div className="flex items-center justify-center gap-2 text-slate-600 dark:text-white/50">
               <Disc3 className="w-5 h-5" />
               <span className="text-sm">Toute la playlist est visible</span>
             </div>
           </div>
         )}
       </div>
-
-
     </div>
   )
 }

@@ -22,7 +22,17 @@ export function Footer() {
             </Link>
             <p className="font-title text-2xl font-medium">Changer les regards sur la folie</p>
           </div>
-          <div className="flex md:justify-end items-end gap-4">Comme des fous. Tous droits réservés.</div>
+          <div className="flex md:justify-end items-end gap-4">
+            <Link href="https://www.instagram.com/comme_des_fous/" target="_blank" rel="noopener noreferrer" aria-label="Instagram Comme des Fous">
+            <Image
+              src="/icons/logo-insta.png"
+              alt="Illustration Footer"
+              width={50}
+              height={50}
+              className="object-contain rounded-2xl"
+            />
+            </Link>
+          </div>
 
         </Container>
         <Container className="border-t not-prose flex flex-col md:flex-row md:gap-2 gap-6 justify-between md:items-center pt-4">

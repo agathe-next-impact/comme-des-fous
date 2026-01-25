@@ -82,46 +82,50 @@ export function FilterPosts({
           {selectedFilters.join(" | ")}
         </div>
       )}
-      <div className="px-8 grid md:grid-cols-[1fr_1fr_1fr] gap-6 my-4 z-10!">
-      <Select
-        value={initialTag || "all"}
-        onValueChange={(value) => handleFilterChange("tag", value)}
-      >
-        <SelectTrigger disabled={!hasTags}>
-          {hasTags ? <SelectValue placeholder="Tags" /> : "No tags found"}
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Tags</SelectItem>
-          {tags.map((tag) => (
-            <SelectItem key={tag.id} value={tag.id.toString()}>
-              {tag.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select
-        value={initialCategory || "all"}
-        onValueChange={(value) => handleFilterChange("category", value)}
-      >
-        <SelectTrigger disabled={!hasCategories}>
-          {hasCategories ? (
-            <SelectValue placeholder="Categories" />
-          ) : (
-            "No categories found"
+      <div className="grid md:grid-cols-[1fr_1fr_1fr] gap-6 my-4 z-10!">
+        <Select
+          value={initialTag || "all"}
+          onValueChange={(value) => handleFilterChange("tag", value)}
+        >
+          <SelectTrigger disabled={!hasTags}>
+            <SelectValue placeholder="Tags" />
+            {!hasTags && <span className="opacity-60">No tags found</span>}
+          </SelectTrigger>
+          {hasTags && (
+            <SelectContent>
+              <SelectItem value="all">Tags</SelectItem>
+              {tags.map((tag) => (
+                <SelectItem key={tag.id} value={tag.id.toString()}>
+                  {tag.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
           )}
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Categories</SelectItem>
-          {categories.map((category) => (
-            <SelectItem key={category.id} value={category.id.toString()}>
-              {category.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        </Select>
 
-{/*
+        <Select
+          value={initialCategory || "all"}
+          onValueChange={(value) => handleFilterChange("category", value)}
+        >
+          <SelectTrigger disabled={!hasCategories}>
+            <SelectValue placeholder="Categories" />
+            {!hasCategories && (
+              <span className="opacity-60">No categories found</span>
+            )}
+          </SelectTrigger>
+          {hasCategories && (
+            <SelectContent>
+              <SelectItem value="all">Categories</SelectItem>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id.toString()}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          )}
+        </Select>
+
+        {/*
     {authors.length > 0 && (
       <Select
         value={initialAuthor || "all"}
@@ -146,10 +150,10 @@ export function FilterPosts({
     )}
 */}
 
-      <Button variant="outline" onClick={handleResetFilters}>
-        Reset des filtres
-      </Button>
-    </div>
+        <Button variant="outline" onClick={handleResetFilters}>
+          Reset des filtres
+        </Button>
+      </div>
     </>
   );
 }

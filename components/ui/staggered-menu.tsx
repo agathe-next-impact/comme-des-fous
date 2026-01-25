@@ -500,8 +500,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           </ul>
           {displaySocials && socialItems && socialItems.length > 0 && (
             <div className="sm-socials" aria-label="Social links">
-              <h3 className="sm-socials-title">Liens</h3>
-              <ul className="sm-socials-list" role="list">
+              <ul className="sm-socials-list flex-col items-start" role="list">
                 {socialItems.map((s, i) => {
                   // Vérifie si le logo est une string non vide et commence par "/" ou "http"
                   const isValidLogo =
@@ -518,20 +517,23 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                         className="sm-socials-link"
                       >
                         {isValidLogo ? (
+                          <div className="mr-2 flex items-center">
                           <Image
                             src={s.logo as string}
                             alt={s.label}
                             className="object-contain mr-2 bg-white rounded-xl p-1"
-                            width={64}
-                            height={64}
+                            width={36}
+                            height={36}
                             onError={(e) => {
                               // Cache l'image si elle échoue à charger
                               (e.currentTarget as HTMLImageElement).style.display = "none";
                               // Optionnel : tu pourrais afficher le label ici via un état local si besoin
                             }}
                           />
+                          <span className="sm-socials-label text-white text-sm mr-2">{s.label}</span>
+                          </div>
                         ) : (
-                          <span className="sm-socials-label mr-2">{s.label}</span>
+                          <span className="sm-socials-label text-white text-sm mr-2">{s.label}</span>
                         )}
                       </a>
                     </li>

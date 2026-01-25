@@ -145,7 +145,7 @@ export default async function CoupsDeCoeurPage() {
   const { items, headerContent } = parseGutenbergBlocks(page.content.rendered);
 
   return (
-    <div className="mt-14">
+    <div className="md:mt-14">
       <Hero titre={page.title.rendered} sousTitre={headerContent} />
 
       {/* Grille de coups de cœur */}
@@ -201,19 +201,14 @@ function CoupDeCoeurCard({ item }: { item: BlockItem }) {
 
       {/* Contenu avec padding */}
       <div className="p-6 flex flex-col gap-4 flex-1">
-        {/* Titre */}
-        {item.title && (
-          <h3 className="text-2xl font-title font-normal leading-snug tracking-wide group-hover:underline">
-            <DecodeFr>{decodeHtmlEntities(item.title)}</DecodeFr>
-          </h3>
-        )}
+
 
         {/* Contenu complet du bloc */}
         <div
           className={cn(
             "coup-de-coeur-content",
-            "text-sm leading-relaxed",
-            "prose prose-sm dark:prose-invert max-w-none",
+            "text-base leading-relaxed",
+            "prose prose-base dark:prose-invert max-w-none",
             "prose-p:mb-3 prose-p:leading-relaxed",
             // Images pleine largeur (override des attributs HTML width/height)
             "[&_img]:!w-full [&_img]:!max-w-full [&_img]:!h-auto [&_img]:my-4 [&_img]:mx-0 [&_img]:object-contain",
