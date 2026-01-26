@@ -8,6 +8,7 @@ import Post from "@/app/posts/[slug]/page";
 // import Prose from "@/components/craft/prose";
 import Image from "next/image";
 import PageContent from "@/components/pages/page-content";
+import { generateContentMetadata, stripHtml, decodeHtmlEntities } from "@/lib/metadata";
 
 export const revalidate = 3600;
 // ✅ Forcer la génération dynamique pour les slugs non pré-générés
@@ -31,39 +32,37 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Essayer de trouver un tag
   const tag = await getTagBySlug(slug);
   if (tag) {
-    return {
-      title: `${tag.name}`,
+    return generateContentMetadata({
+      title: tag.name,
       description: `Parcourez les articles, actualités et ressources associés au tag ${tag.name}.`,
-      alternates: {
-        canonical: `/${slug}`,
-      },
-    };
+      slug: slug,
+    });
   }
 
   // Essayer de trouver un article
   const post = await getPostBySlug(slug);
   if (post) {
-    return {
+    return generateContentMetadata({
       title: post.title.rendered,
-      description: post.excerpt.rendered.replace(/<[^>]*>/g, "").substring(0, 160),
-      alternates: {
-        canonical: `/${slug}`,
-      },
-    };
+      description: post.excerpt.rendered 
+        ? stripHtml(post.excerpt.rendered) 
+        : stripHtml(post.content.rendered).slice(0, 200) + "...",
+      slug: slug,
+      content: post,
+    });
   }
 
   // Essayer de trouver une page WordPress
   const page = await getPageBySlug(slug);
   if (page) {
-    return {
+    return generateContentMetadata({
       title: page.title.rendered,
-      description: page.excerpt?.rendered
-        ? page.excerpt.rendered.replace(/<[^>]*>/g, "").substring(0, 160)
-        : page.content.rendered.replace(/<[^>]*>/g, "").substring(0, 160),
-      alternates: {
-        canonical: `/${slug}`,
-      },
-    };
+      description: page.excerpt?.rendered 
+        ? stripHtml(page.excerpt.rendered) 
+        : stripHtml(page.content.rendered).slice(0, 200) + "...",
+      slug: slug,
+      content: page,
+    });
   }
 
   return {

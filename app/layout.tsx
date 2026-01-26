@@ -96,8 +96,6 @@ export default function RootLayout({
         quicksand.variable
       )}
     >
-      <head>
-      </head>
       <body className={cn("min-h-screen min-w-screen antialiased", openSans.className)}>
         <URLRewriter />   
         <ThemeProvider

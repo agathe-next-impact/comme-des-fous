@@ -129,6 +129,11 @@ export function generateContentMetadata({
   // ✅ Nettoyage et encodage correct des textes
   const cleanTitle = sanitizeMetaText(title);
   let cleanDescription = sanitizeMetaText(description);
+
+  // Fallback description si vide
+  if (!cleanDescription) {
+    cleanDescription = sanitizeMetaText(siteConfig.site_description);
+  }
   
   // ✅ LinkedIn préfère des descriptions entre 150-200 caractères
   if (cleanDescription.length > 200) {
