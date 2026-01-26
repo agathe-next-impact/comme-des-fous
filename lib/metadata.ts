@@ -55,7 +55,7 @@ export function getFeaturedImageUrl(content: Post | any): string | undefined {
       return preferredSize.source_url;
     }
   }
-  
+
   // 3. Fallback sur featured_media_url si présent
   if (content?.featured_media_url) {
     return content.featured_media_url;

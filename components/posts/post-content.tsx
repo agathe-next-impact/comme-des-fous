@@ -472,7 +472,8 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
           "prose-pre:bg-muted",
           "prose-blockquote:border-primary prose-blockquote:my-8",
           "prose-img:shadow-lg prose-img:my-8",
-          "prose-ul:my-6 prose-ol:my-6",
+          "prose-ul:my-6 prose-ul:pl-2 prose-ol:my-6 prose-ol:mt-2 prose-ol:pl-0",
+          "prose-li:pl-1",
           className
         )}
         dangerouslySetInnerHTML={{ __html: cleanedContent }}

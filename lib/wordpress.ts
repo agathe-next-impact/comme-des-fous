@@ -308,7 +308,7 @@ export async function getRecentPosts(filterParams?: {
 
 export async function getPostById(id: number): Promise<Post> {
   try {
-    return await wordpressFetch<Post>(`/wp-json/wp/v2/posts/${id}`);
+    return await wordpressFetch<Post>(`/wp-json/wp/v2/posts/${id}`, { _embed: true });
   } catch (err: any) {
     if (err instanceof WordPressAPIError && err.status === 404) {
       return undefined as any;
@@ -427,7 +427,7 @@ export async function getAllPages(): Promise<Page[]> {
 
 export async function getPageById(id: number): Promise<Page> {
   try {
-    return await wordpressFetch<Page>(`/wp-json/wp/v2/pages/${id}`);
+    return await wordpressFetch<Page>(`/wp-json/wp/v2/pages/${id}`, { _embed: true });
   } catch (err: any) {
     if (err instanceof WordPressAPIError && err.status === 404) {
       return undefined as any;

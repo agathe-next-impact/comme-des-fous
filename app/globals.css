@@ -111,6 +111,28 @@
     .prose {
       font-family: 'Open Sans', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     }
+
+    /* Surcharger les styles WordPress des listes pour réduire l'indentation */
+    .post-content ul,
+    .post-content ol {
+      padding-left: 0rem !important;
+      margin-left: 0 !important;
+    }
+
+    .post-content li {
+      padding-left: 0.25rem !important;
+      margin-left: 0 !important;
+    }
+
+    /* Listes imbriquées */
+    .post-content ul ul,
+    .post-content ul ol,
+    .post-content ol ul,
+    .post-content ol ol {
+      padding-left: 1rem !important;
+      margin-top: 0.5rem !important;
+      margin-bottom: 0.5rem !important;
+    }
 }
 
 
