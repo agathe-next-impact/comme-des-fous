@@ -62,7 +62,8 @@ export async function generateMetadata({
       : stripHtml(post.content.rendered).slice(0, 200) + "...",
     slug: post.slug,
     basePath: "posts",
-    imageUrl, // On passe l'URL ici
+    imageUrl,
+    content: post, // ✅ Passer le contenu complet pour extraction de l'image
   });
 }
 

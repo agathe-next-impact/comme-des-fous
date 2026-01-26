@@ -49,6 +49,7 @@ export async function generateMetadata({
     description,
     slug: page.slug,
     basePath: "pages",
+    content: page, // ✅ Passer le contenu complet pour extraction de l'image
   });
 }
 

@@ -3,6 +3,9 @@ import { siteConfig } from "@/site.config";
 import type { Metadata } from "next";
 import type { Post } from "./wordpress.d";
 
+// Image par défaut utilisée si aucune image mise en avant n'est disponible
+const DEFAULT_FALLBACK_IMAGE = `${siteConfig.site_domain}/logo.png`;
+
 // Décode les entités HTML (&amp;, &#8217;, etc.)
 export function decodeHtmlEntities(str: string): string {
   if (!str) return "";
@@ -65,8 +68,9 @@ export function getFeaturedImageUrl(content: Post | any): string | undefined {
       return imgMatch[1];
     }
   }
-  
-  return undefined;
+
+  // 5. Fallback final sur une image statique du site
+  return DEFAULT_FALLBACK_IMAGE;
 }
 
 /**
@@ -124,26 +128,33 @@ export function generateContentMetadata({
 }: ContentMetadataOptions): Metadata {
   // ✅ Nettoyage et encodage correct des textes
   const cleanTitle = sanitizeMetaText(title);
-  const cleanDescription = sanitizeMetaText(description);
+  let cleanDescription = sanitizeMetaText(description);
+  
+  // ✅ LinkedIn préfère des descriptions entre 150-200 caractères
+  if (cleanDescription.length > 200) {
+    cleanDescription = cleanDescription.substring(0, 197) + "...";
+  }
   
   // Construction dynamique de l'URL selon le type de contenu
   const path = basePath ? `/${basePath}/${slug}` : `/${slug}`;
   const fullUrl = `${siteConfig.site_domain}${path}`;
 
-  // ✅ Priorité : imageUrl explicite > image mise en avant WP > OG généré
+  // ✅ Priorité : imageUrl explicite > image mise en avant WP > fallback
   let finalImageUrl = imageUrl;
   
+  // Si imageUrl n'est pas définie, essayer d'extraire depuis le contenu
   if (!finalImageUrl && content) {
     finalImageUrl = getFeaturedImageUrl(content);
   }
   
-  // Fallback sur l'image OG générée dynamiquement
+  // Si toujours pas d'image, utiliser le fallback par défaut
   if (!finalImageUrl) {
-    const ogUrl = new URL(`${siteConfig.site_domain}/api/og`);
-    // ✅ Encoder correctement les paramètres d'URL
-    ogUrl.searchParams.append("title", cleanTitle);
-    ogUrl.searchParams.append("description", cleanDescription);
-    finalImageUrl = ogUrl.toString();
+    finalImageUrl = DEFAULT_FALLBACK_IMAGE;
+  }
+
+  // ✅ S'assurer que l'URL de l'image est absolue
+  if (finalImageUrl && !finalImageUrl.startsWith('http')) {
+    finalImageUrl = `${siteConfig.site_domain}${finalImageUrl}`;
   }
 
   return {
@@ -167,6 +178,12 @@ export function generateContentMetadata({
           alt: cleanTitle,
         },
       ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: cleanTitle,
+      description: cleanDescription,
+      images: [finalImageUrl],
     },
   };
 }

@@ -28,6 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     slug: "coups-de-coeur",
     basePath: "pages",
+    content: page,
   });
 }
 

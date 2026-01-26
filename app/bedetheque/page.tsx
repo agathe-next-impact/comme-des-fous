@@ -26,6 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     slug: "bedetheque",
     basePath: "pages",
+    content: page,
   });
 }
 

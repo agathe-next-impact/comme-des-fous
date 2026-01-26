@@ -24,6 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 		description,
 		slug: "playlist-musicale-de-fous",
 		basePath: "pages",
+		content: page,
 	});
 }
 
