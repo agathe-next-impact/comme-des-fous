@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import type { Post } from "./wordpress.d";
 
 // Image par défaut utilisée si aucune image mise en avant n'est disponible
-const DEFAULT_FALLBACK_IMAGE = `${siteConfig.site_domain}/logo.png`;
+const DEFAULT_FALLBACK_IMAGE = `/stickers/sticker14.jpg`;
 
 // Décode les entités HTML (&amp;, &#8217;, etc.)
 export function decodeHtmlEntities(str: string): string {
