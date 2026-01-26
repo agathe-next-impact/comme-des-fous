@@ -188,7 +188,7 @@ export function JukeboxPlaylist({
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto text-slate-900 dark:text-white">
+    <div className="w-full max-w-2xl mx-auto bg-transparent text-slate-900 dark:text-white">
       {/* Jukebox Header */}
       <div className="relative mb-8">
         {/* Neon-style title */}
@@ -234,7 +234,7 @@ export function JukeboxPlaylist({
 
       {/* Song List */}
       <div className="relative">
-        <div className="space-y-2 p-4 bg-white/60 dark:bg-transparent rounded-2xl">
+        <div className="space-y-2 p-4 bg-transparent rounded-2xl">
           {visibleSongs.map((song, index) => (
             <SongSlot
               key={`${song.title}-${song.artist}`}

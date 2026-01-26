@@ -9,6 +9,7 @@ export function decodeHtmlEntities(str: string): string {
   return he.decode(str);
 }
 
+
 /**
  * Nettoie et encode correctement le texte pour les métadonnées
  * Supprime les balises HTML, décode les entités, et normalise les espaces

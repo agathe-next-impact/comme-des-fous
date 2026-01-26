@@ -88,7 +88,7 @@ export default async function BedethequePage() {
   return (
     <main className="min-h-screen">
       <Hero 
-        titre="Bédéthèque"
+        titre="BEDETHEQUE"
         sousTitre={introText}
       />
       

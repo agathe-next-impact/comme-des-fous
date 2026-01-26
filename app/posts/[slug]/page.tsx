@@ -97,16 +97,16 @@ export default async function Page({
   });
 
   return (
-    <div className="md:mt-14">
+    <div className="mt-4 md:mt-14">
         <Hero
           titre={decodeHtmlEntities(post.title.rendered)}
           sousTitre=""
         />
 
           <Container className="w-full mt-4 md:mt-8">
-              <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 md:mb-4">
+              <div className="w-full flex flex-col md:flex-row items-center justify-between md:gap-4 md:mb-4">
                 <div>
-                <div className="flex justify-between items-center gap-4 mb-4 pb-4">
+                <div className="flex justify-between items-center gap-4 md:mb-4 pb-4">
                   <div className="flex gap-2 items-center">
                     {category && (
                       <span className="text-(--color-red) pt-0.5 pb-1 px-2 hover:text-white border border-(--color-red) transition-colors">
@@ -117,7 +117,7 @@ export default async function Page({
                 </div>
                 
                 {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4 pb-4">
+                  <div className="flex flex-wrap gap-2 md:mb-4 pb-4">
                     {tags.map((tag) => (
                       <a 
                         key={tag.id}
@@ -130,6 +130,7 @@ export default async function Page({
                   </div>
                 )}
               </div>
+              {featuredMedia?.source_url && (
               <div className="w-full flex justify-end">
                 <Image
                   src={featuredMedia?.source_url || "/logo.png"}
@@ -139,6 +140,7 @@ export default async function Page({
                   className="w-full md:w-fit object-cover rounded-md"
                 />
               </div>
+              )}
               </div>
                 
                 <PostContent content={post.content.rendered} scrapedMedia={scrapedMedia} />

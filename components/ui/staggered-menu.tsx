@@ -522,8 +522,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                             src={s.logo as string}
                             alt={s.label}
                             className="object-contain mr-2 bg-white rounded-xl p-1"
-                            width={36}
-                            height={36}
+                            width={44}
+                            height={44}
                             onError={(e) => {
                               // Cache l'image si elle échoue à charger
                               (e.currentTarget as HTMLImageElement).style.display = "none";

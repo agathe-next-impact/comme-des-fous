@@ -11,6 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import type { Author, Tag, Category } from "@/lib/wordpress.d";
 
+/**
+ * Props pour le composant de filtre d'archives.
+ * Les tags doivent être limités aux 30 plus utilisés côté page d'archive.
+ */
 interface FilterPostsProps {
   authors: Author[];
   tags: Tag[];
@@ -96,6 +100,7 @@ export function FilterPosts({
               <SelectItem value="all">Tags</SelectItem>
               {[...tags]
                 .sort((a, b) => b.count - a.count)
+                .slice(0, 50) // Limite à 30 tags les plus utilisés
                 .map((tag) => (
                   <SelectItem key={tag.id} value={tag.id.toString()}>
                     {tag.name} ({tag.count})
@@ -119,7 +124,7 @@ export function FilterPosts({
             <SelectContent>
               <SelectItem value="all">Categories</SelectItem>
               {[...categories]
-                .sort((a, b) => b.count - a.count)
+                .sort((a, b) => a.name.localeCompare(b.name)) // Tri alphabétique
                 .map((category) => (
                   <SelectItem key={category.id} value={category.id.toString()}>
                     {category.name} ({category.count})
@@ -129,31 +134,6 @@ export function FilterPosts({
           )}
         </Select>
 
-        {/*
-    {authors.length > 0 && (
-      <Select
-        value={initialAuthor || "all"}
-        onValueChange={(value) => handleFilterChange("author", value)}
-      >
-        <SelectTrigger disabled={!hasAuthors} className="text-center">
-          {hasAuthors ? (
-            <SelectValue placeholder="Auteurs" />
-          ) : (
-            "No authors found"
-          )}
-        </SelectTrigger>
-        <SelectContent>
-        <SelectItem value="all">Auteurs</SelectItem>
-          {authors.map((author) => (
-            <SelectItem key={author.id} value={author.id.toString()}>
-              {author.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    )}
-*/}
-
         <Button variant="outline" onClick={handleResetFilters}>
           Reset des filtres
         </Button>
@@ -161,3 +141,5 @@ export function FilterPosts({
     </>
   );
 }
+
+

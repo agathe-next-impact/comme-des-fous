@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { decodeHtmlEntities } from "@/lib/metadata";
 
 interface PostContentProps {
   content: string;
@@ -85,8 +86,20 @@ function extractYouTubeId(url: string): string | null {
   return null;
 }
 
+function normalizeUrl(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    return `${urlObj.protocol}//${urlObj.hostname}${urlObj.pathname}`;
+  } catch {
+    return url.split('?')[0].split('#')[0];
+  }
+}
+
 function getMediaKey(src: string): string {
+  if (!src) return 'invalid';
   const lower = src.toLowerCase();
+  const normalized = normalizeUrl(lower);
+
   const ytId = extractYouTubeId(lower);
   if (ytId) return `yt:${ytId}`;
 
@@ -96,18 +109,34 @@ function getMediaKey(src: string): string {
   const tiktok = lower.match(/tiktok\.com\/.+\/video\/(\d+)/i);
   if (tiktok?.[1]) return `tt:${tiktok[1]}`;
 
-  const twitter = lower.match(/https?:\/\/(?:www\.)?(twitter\.com|x\.com)\/[^\s?#]+/i);
-  if (twitter) return `tw:${lower}`;
+  const twitterMatch = lower.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/i);
+  if (twitterMatch?.[1]) return `tw:${twitterMatch[1]}`;
 
-  const facebook = lower.match(/facebook\.com\//i);
-  if (facebook) return `fb:${lower}`;
+  const facebookMatch = lower.match(/facebook\.com/i);
+  if (facebookMatch) return `fb:${normalized}`;
 
-  // PDF files
+  const spotify = lower.match(/spotify\.com\/(?:intl-[a-z]+\/)?(?:embed[^/]*\/)?(?:episode|track|playlist|album|show)\/([a-zA-Z0-9]+)/i);
+  if (spotify?.[1]) return `spotify:${spotify[1]}`;
+
+  const soundcloud = lower.match(/soundcloud\.com\/([^/?#]+\/[^/?#]+)/i);
+  if (soundcloud?.[1]) return `sc:${soundcloud[1]}`;
+
+  const deezer = lower.match(/deezer\.com\/(?:fr\/)?(?:episode|track|playlist|album)\/(\d+)/i);
+  if (deezer?.[1]) return `dz:${deezer[1]}`;
+
+  const apple = lower.match(/podcasts\.apple\.com\/.*\/podcast\/[^/]+\/id(\d+)/i);
+  if (apple?.[1]) return `apple:${apple[1]}`;
+
+  const ausha = lower.match(/ausha\.co\/(?:embed\/)?([^/?#]+)/i);
+  if (ausha?.[1]) return `ausha:${ausha[1]}`;
+
   if (lower.endsWith('.pdf') || lower.includes('.pdf?')) {
-    return `pdf:${lower}`;
+    const pdfPath = normalized.split('?')[0];
+    const pdfName = pdfPath.split('/').pop() || 'document';
+    return `pdf:${pdfName}`;
   }
 
-  return lower;
+  return `url:${normalized}`;
 }
 
 function processContent(
@@ -116,14 +145,36 @@ function processContent(
 ): { media: EmbeddedMedia[]; cleanedContent: string } {
   const extractedMedia: EmbeddedMedia[] = [];
   const seen = new Set<string>();
+  
   const addMedia = (item: EmbeddedMedia) => {
+    if (!item.src || !item.src.trim()) return;
+    
     const key = getMediaKey(item.src);
+    if (key === 'invalid' || key.startsWith('invalid:')) return;
     if (seen.has(key)) return;
+    
+    // Ignorer les URLs SoundCloud sans api.soundcloud
+    if (item.src.toLowerCase().includes('soundcloud.com') && !item.src.toLowerCase().includes('api.soundcloud')) {
+      return;
+    }
+    
     seen.add(key);
     extractedMedia.push(item);
   };
 
-  scrapedMedia.forEach((m) => {
+  // Dédupliquer scrapedMedia avant traitement
+  const uniqueScrapedMedia: typeof scrapedMedia = [];
+  const scrapedSeen = new Set<string>();
+  for (const m of scrapedMedia) {
+    if (!m.src) continue;
+    const key = getMediaKey(m.src);
+    if (!scrapedSeen.has(key)) {
+      scrapedSeen.add(key);
+      uniqueScrapedMedia.push(m);
+    }
+  }
+
+  uniqueScrapedMedia.forEach((m) => {
     addMedia({
       src: m.src,
       title: m.title,
@@ -320,8 +371,18 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
       );
     });
 
-    container.querySelectorAll("ul, ol").forEach((list) => {
-      list.classList.add("my-4", "space-y-2", "ml-6");
+    container.querySelectorAll("ul").forEach((list) => {
+      list.classList.add("my-4", "space-y-2", "ml-6", "list-disc", "list-inside");
+      list.querySelectorAll("li").forEach((li) => {
+        li.classList.add("mb-2");
+      });
+    });
+
+    container.querySelectorAll("ol").forEach((list) => {
+      list.classList.add("my-4", "space-y-2", "ml-6", "list-decimal", "list-inside");
+      list.querySelectorAll("li").forEach((li) => {
+        li.classList.add("mb-2");
+      });
     });
 
     container.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach((heading) => {
@@ -330,7 +391,6 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
 
     container.querySelectorAll("p").forEach((p) => {
       p.classList.add("mb-6");
-      p.style.lineHeight = "2.2";
     });
 
     container.querySelectorAll("table").forEach((table) => {
@@ -373,16 +433,38 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
             color: #dc2626 !important; /* red-600 */
             text-decoration: underline;
           }
+          .post-content ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+          }
+          .post-content ul li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+          }
+          .post-content ol {
+            list-style-type: decimal;
+            padding-left: 1.5rem;
+          }
+          .post-content ol li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+          }
+          .post-content li > ul,
+          .post-content li > ol {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+          }
         `}
       </style>
-      <div className="max-w-4xl mx-auto mt-12 border-t border-white/20 pt-8" />
+      <div className="max-w-4xl mx-auto border-t border-white/20 pt-4 md:pt-8" />
       <div
         ref={contentRef}
         className={cn(
           "post-content",
-          "max-w-6xl mx-auto py-8",
+          "max-w-6xl mx-auto md:py-8",
           "prose prose-lg dark:prose-invert",
           "prose-headings:font-bold prose-headings:tracking-tight prose-headings:mt-12 prose-headings:mb-6 prose-headings:leading-tight",
+          "prose-p:leading-relaxed prose-p:text-base",
           "prose-p:mb-6",
           "prose-a:text-red-500 prose-a:no-underline hover:prose-a:underline",
           "prose-strong:font-bold",
@@ -393,19 +475,18 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
           "prose-ul:my-6 prose-ol:my-6",
           className
         )}
-        style={{ lineHeight: "2.2" }}
         dangerouslySetInnerHTML={{ __html: cleanedContent }}
       />
 
       {media.length > 0 && (
-        <div className="max-w-6xl mx-auto mt-12 border-t border-white/20 pt-8">
+        <div className="max-w-6xl w-full mx-auto mt-12 border-t border-white/20 pt-8">
           <h3 className="text-2xl font-bold mb-6">Médias</h3>
-          <div className="grid grid-cols-1 gap-6">
+          <div className="md:w-3xl mx-auto grid grid-cols-1 gap-6">
             {media.map((item, index) => (
               <div
                 key={index}
                 className={cn(
-                  "relative md:py-6 group flex flex-col not-prose",
+                  "md:w-max relative group not-prose h-max",
                   "border border-white/20",
                   "hover:bg-white/5 transition-all duration-300",
                   "before:absolute before:top-0 before:left-0 before:w-3 before:h-3",
@@ -418,8 +499,8 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
               >
                 {item.type === 'pdf' ? (
                   /* Rendu spécifique pour les PDFs */
-                  <div className="flex flex-col gap-4">
-                    <div className="relative w-full aspect-[3/4] bg-muted/30">
+                  <div className="flex flex-col gap-0">
+                    <div className="relative min-w-3xl aspect-[7/8] bg-muted/30">
                       <iframe
                         src={`${item.src}#view=FitH`}
                         title={item.title || 'Document PDF'}
@@ -449,16 +530,16 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
                   </div>
                 ) : (
                   /* Rendu pour vidéos, podcasts et embeds sociaux */
-                  <>
+                  <div className="flex flex-col gap-0">
                     <div className={cn(
                       "relative",
                       item.type === 'podcast'
-                        ? 'w-full aspect-[3/1]'
+                        ? 'md:min-w-3xl w-full h-max aspect-[3/1]'
                         : item.type === 'social' && item.platform === 'instagram'
-                          ? 'w-1/2 aspect-square'
+                          ? 'md:w-base aspect-[3/5] m-0 p-0'
                           : item.type === 'social'
-                            ? 'w-full aspect-[4/5]'
-                            : 'w-full aspect-video'
+                            ? 'w-full md:min-w-3xl md:w-full aspect-[4/3]'
+                            : 'w-full md:min-w-3xl md:w-full aspect-video'
                     )}>
                       <iframe
                         src={item.src}
@@ -473,9 +554,9 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
                       />
                     </div>
                     {item.title && (
-                      <p className="text-sm text-muted-foreground mt-4">{item.title}</p>
+                      <p className="text-sm text-muted-foreground mt-4">{decodeHtmlEntities(item.title)}</p>
                     )}
-                  </>
+                  </div>
                 )}
                 {item.type === 'pdf' && (
                   <span className="absolute top-2 right-2 text-xs bg-red-600 text-white px-2 py-1 rounded-full">
@@ -492,7 +573,7 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
                     # {item.platform || 'Social'}
                   </span>
                 )}
-              </div>
+                </div>
             ))}
           </div>
         </div>

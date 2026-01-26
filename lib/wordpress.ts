@@ -62,12 +62,6 @@ function getCacheKey(path: string, query?: Record<string, any>) {
 const baseUrl = process.env.WORDPRESS_URL || process.env.NEXT_PUBLIC_WORDPRESS_URL;
 const isConfigured = Boolean(baseUrl);
 
-if (!isConfigured) {
-  console.warn(
-    "WORDPRESS_URL environment variable is not defined - WordPress features will be unavailable"
-  );
-}
-
 class WordPressAPIError extends Error {
   constructor(
     message: string,
@@ -158,13 +152,11 @@ async function wordpressFetch<T>(
         // Backoff exponentiel avant le prochain essai
         if (attempt < MAX_RETRIES - 1) {
           const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
-          console.log(`[WP] Retry ${attempt + 1}/${MAX_RETRIES} for ${path} in ${delay}ms`);
           await new Promise(r => setTimeout(r, delay));
         }
       }
     }
     
-    console.error(`[WP] All ${MAX_RETRIES} retries failed for ${path}`);
     throw lastError || new Error(`WordPress fetch failed for ${path}`);
   });
 }
@@ -181,7 +173,6 @@ async function wordpressFetchGraceful<T>(
   try {
     return await wordpressFetch<T>(path, query, tags);
   } catch {
-    console.warn(`WordPress fetch failed for ${path}`);
     return fallback;
   }
 }
@@ -235,7 +226,6 @@ async function wordpressFetchPaginatedGraceful<T>(
   try {
     return await wordpressFetchPaginated<T[]>(path, query, tags);
   } catch {
-    console.warn(`WordPress paginated fetch failed for ${path}`);
     return emptyResponse;
   }
 }
@@ -382,12 +372,22 @@ export async function getTagsByPost(postId: number): Promise<Tag[]> {
 }
 
 export async function getAllTags(): Promise<Tag[]> {
-  return wordpressFetchGraceful<Tag[]>(
-    "/wp-json/wp/v2/tags",
-    [],
-    { per_page: 100 },
-    ["wordpress", "tags"]
-  );
+  const allTags: Tag[] = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const response = await wordpressFetchPaginated<Tag[]>(
+      "/wp-json/wp/v2/tags",
+      { per_page: 100, page },
+      ["wordpress", "tags", `tags-page-${page}`]
+    );
+    allTags.push(...response.data);
+    hasMore = page < response.headers.totalPages;
+    page++;
+  }
+
+  return allTags;
 }
 
 export async function getTagById(id: number): Promise<Tag> {
@@ -563,10 +563,7 @@ export async function createOrGetUser(
         const errorData = JSON.parse(responseText);
         errorMessage = errorData.message || errorData.error || errorMessage;
         errorCode = errorData.code || "";
-        console.error("[User] Error code:", errorCode);
-        console.error("[User] Error message:", errorMessage);
       } catch (e) {
-        console.error("[User] Error response:", responseText);
       }
       
       // Si c'est un problème de username en double, essayer avec timestamp
@@ -585,27 +582,22 @@ export async function createOrGetUser(
           });
 
           if (!retryResponse.ok) {
-            console.warn("[User] Retry also failed, will use anonymous comment");
             return null;
           }
 
           const newUser = JSON.parse(await retryResponse.text());
           return newUser;
         } catch (retryError) {
-          console.warn("[User] Retry failed with error, will use anonymous comment:", retryError);
           return null;
         }
       }
       
-      // Sinon continuer avec les données de base
-      console.warn("[User] Could not create user, will use anonymous comment");
       return null;
     }
 
     const newUser = JSON.parse(responseText);
     return newUser;
   } catch (error) {
-    console.error("[User] Fetch error:", error);
     return null;
   }
 }
@@ -721,7 +713,6 @@ export async function getAllPostSlugs(): Promise<{ slug: string }[]> {
 
     return allSlugs;
   } catch {
-    console.warn("WordPress unavailable, skipping static generation for posts");
     return [];
   }
 }
@@ -756,7 +747,6 @@ export async function getAllPostsForSitemap(): Promise<
 
     return allPosts;
   } catch {
-    console.warn("WordPress unavailable, skipping sitemap generation");
     return [];
   }
 }
@@ -944,9 +934,7 @@ export async function scrapePostEmbeddedMedia(postUrl: string): Promise<{ src: s
     } catch (error: any) {
       clearTimeout(timeout);
       if (error.name === 'AbortError') {
-        console.warn(`[Scrape] Timeout scraping ${postUrl}`);
       } else {
-        console.error(`[Scrape] Error scraping ${postUrl}:`, error);
       }
       return [];
     }
@@ -1020,7 +1008,6 @@ export async function createPostComment(
       } catch (e) {
         errorMessage = responseText || errorMessage;
       }
-      console.error("[Comment] Error:", errorMessage);
       throw new WordPressAPIError(
         errorMessage,
         response.status,
@@ -1033,9 +1020,9 @@ export async function createPostComment(
     if (error instanceof WordPressAPIError) {
       throw error;
     }
-    console.error("[Comment] Fetch error:", error);
     throw new Error(`Failed to create comment: ${error}`);
   }
 }
 
 export { WordPressAPIError };
+

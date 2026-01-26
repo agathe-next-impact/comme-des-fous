@@ -110,7 +110,7 @@ export default async function PlaylistMusicaleDeFousPage() {
 
 	return (
 		<div className="md:mt-14">
-			<Hero titre={page.title.rendered} sousTitre={""} />
+			<Hero titre="PLAYLIST MUSICALE DE FOUS" sousTitre={""} />
 
                 <div className="max-w-4xl mx-auto px-4 md:pt-16 md:pb-8">
 				{youtubeSrc && (

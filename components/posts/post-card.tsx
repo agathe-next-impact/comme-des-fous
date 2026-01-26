@@ -8,6 +8,7 @@ import { Post } from "@/lib/wordpress.d";
 import { DecodeFr } from "@/components/decode-fr";
 import { cn } from "@/lib/utils";
 import { truncateHtml } from "@/lib/metadata";
+import { isYoutubeUrl, isPodcastUrl, PODCAST_PLATFORMS } from "@/lib/media-utils";
 
 interface ScrapedMedia {
   src: string;
@@ -15,54 +16,53 @@ interface ScrapedMedia {
   type?: "video" | "podcast";
 }
 
-// Podcast platforms detection
-const PODCAST_PLATFORMS = [
-  "spotify.com",
-  "open.spotify.com",
-  "soundcloud.com",
-  "podcasts.apple.com",
-  "anchor.fm",
-  "podbean.com",
-  "acast.com",
-  "deezer.com",
-  "ausha.co",
-  "audioboom.com",
-  "megaphone.fm",
-  "simplecast.com",
-  "buzzsprout.com",
-  "spreaker.com",
-  "castbox.fm",
-  "player.fm",
-  "stitcher.com",
-  "podcloud.fr",
-  "mixcloud.com",
-];
+// const PODCAST_PLATFORMS = [
+//   "spotify.com",
+//   "open.spotify.com",
+//   "soundcloud.com",
+//   "podcasts.apple.com",
+//   "anchor.fm",
+//   "podbean.com",
+//   "acast.com",
+//   "deezer.com",
+//   "ausha.co",
+//   "audioboom.com",
+//   "megaphone.fm",
+//   "simplecast.com",
+//   "buzzsprout.com",
+//   "spreaker.com",
+//   "castbox.fm",
+//   "player.fm",
+//   "stitcher.com",
+//   "podcloud.fr",
+//   "mixcloud.com",
+// ];
 
-const isPodcastUrl = (url: string) => {
-  const lower = url.toLowerCase();
-  // Mixcloud: match all widget/iframe embeds and all mixcloud.com subdomains
-  if (lower.includes("mixcloud.com/widget/iframe")) return true;
-  if (/https?:\/\/(www\.)?mixcloud\.com\//.test(lower)) return true;
-  return PODCAST_PLATFORMS.some((p) => lower.includes(p));
-};
-const isYoutubeUrl = (url: string) =>
-  url.includes("youtube.com") || url.includes("youtu.be");
-const getMediaType = (url: string): "video" | "podcast" | null => {
-  const lowerUrl = url.toLowerCase();
-  if (
-    ["youtube.com", "youtu.be", "vimeo.com", "dailymotion.com"].some((p) =>
-      lowerUrl.includes(p)
-    )
-  )
-    return "video";
-  if (
-    PODCAST_PLATFORMS.some((p) => lowerUrl.includes(p)) ||
-    lowerUrl.includes("soundcloud.com") ||
-    lowerUrl.includes("www.soundcloud.com")
-  )
-    return "podcast";
-  return null;
-};
+// const isPodcastUrl = (url: string) => {
+//   const lower = url.toLowerCase();
+//   // Mixcloud: match all widget/iframe embeds and all mixcloud.com subdomains
+//   if (lower.includes("mixcloud.com/widget/iframe")) return true;
+//   if (/https?:\/\/(www\.)?mixcloud\.com\//.test(lower)) return true;
+//   return PODCAST_PLATFORMS.some((p) => lower.includes(p));
+// };
+// const isYoutubeUrl = (url: string) =>
+//   url.includes("youtube.com") || url.includes("youtu.be");
+// const getMediaType = (url: string): "video" | "podcast" | null => {
+//   const lowerUrl = url.toLowerCase();
+//   if (
+//     ["youtube.com", "youtu.be", "vimeo.com", "dailymotion.com"].some((p) =>
+//       lowerUrl.includes(p)
+//     )
+//   )
+//     return "video";
+//   if (
+//     PODCAST_PLATFORMS.some((p) => lowerUrl.includes(p)) ||
+//     lowerUrl.includes("soundcloud.com") ||
+//     lowerUrl.includes("www.soundcloud.com")
+//   )
+//     return "podcast";
+//   return null;
+// };
 
 export function PostCard({
   post,
@@ -158,7 +158,6 @@ export function PostCard({
         }
       }
     } catch (error) {
-      console.error("Failed to scrape media:", error);
     }
   };
 
@@ -285,3 +284,5 @@ export function PostCard({
     </Link>
   );
 }
+
+// export { isYoutubeUrl };

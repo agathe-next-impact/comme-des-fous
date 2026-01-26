@@ -1,42 +1,147 @@
 import React from "react";
+import { isYoutubeUrl } from "@/lib/media-utils";
 import { DecodeFr } from "./decode-fr";
 import Link from "next/link";
 import { truncateHtml } from "@/lib/utils";
+import { getRecentPosts } from "@/lib/wordpress";
 
 
+
+
+interface TaxLink {
+  id: number;
+  name: string;
+  slug: string;
+}
 
 interface Article {
   title: string;
   excerpt: string;
-  categories: string[];
-  tags: string[];
+  categories: TaxLink[];
+  tags: TaxLink[];
   imageUrl: string;
   link: string;
-  mediaUrl?: string; // Optional: video or podcast url
-  mediaType?: "youtube" | "podcast"; // Optional: type
+  mediaUrl?: string;
+  mediaType?: "youtube" | "podcast";
+  isPinned?: boolean;
+  date?: string; // ISO string
 }
 
-interface LastArticleSectionProps {
-  article: Article;
+// plus de props
+
+
+
+async function fetchLastNonPinnedArticle(): Promise<Article | null> {
+  const posts = await getRecentPosts();
+  const nonPinned = posts.filter((p: any) => !p.sticky);
+  if (nonPinned.length === 0) return null;
+  nonPinned.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const post = nonPinned[0];
+  if (!post) return null;
+
+  // Extraction des catégories et tags avec slug et nom depuis _embedded.wp:term
+  let categories: TaxLink[] = [];
+  let tags: TaxLink[] = [];
+  if (post._embedded && post._embedded["wp:term"]) {
+    const terms = post._embedded["wp:term"];
+    // Catégories
+    if (Array.isArray(terms[0])) {
+      categories = terms[0].map((cat: any) => ({ id: cat.id, name: cat.name, slug: cat.slug }));
+    }
+    // Tags
+    if (Array.isArray(terms[1])) {
+      tags = terms[1].map((tag: any) => ({ id: tag.id, name: tag.name, slug: tag.slug }));
+    }
+  }
+
+  function getImageUrl(post: any): string {
+    return post.featured_media?.source_url || "";
+  }
+
+  return {
+    title: typeof post.title === "object" && post.title?.rendered ? post.title.rendered : String(post.title),
+    excerpt: typeof post.excerpt === "object" && post.excerpt?.rendered ? post.excerpt.rendered : String(post.excerpt),
+    categories,
+    tags,
+    imageUrl: getImageUrl(post),
+    link: `/posts/${post.slug}`,
+    isPinned: !!post.sticky,
+    date: post.date,
+  };
 }
 
-export const LastArticleSection: React.FC<LastArticleSectionProps> = ({ article }) => {
-  // Determine if we have a valid media to show
+
+
+
+export default async function LastArticleSection() {
+  const posts = await getRecentPosts();
+  const nonPinned = posts.filter((p: any) => !p.sticky);
+  if (nonPinned.length === 0) return null;
+  nonPinned.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const post = nonPinned[0];
+  if (!post) return null;
+
+  let categories: TaxLink[] = [];
+  let tags: TaxLink[] = [];
+  if (post._embedded && post._embedded["wp:term"]) {
+    const terms = post._embedded["wp:term"];
+    if (Array.isArray(terms[0])) {
+      categories = terms[0].map((cat: any) => ({ id: cat.id, name: cat.name, slug: cat.slug }));
+    }
+    if (Array.isArray(terms[1])) {
+      tags = terms[1].map((tag: any) => ({ id: tag.id, name: tag.name, slug: tag.slug }));
+    }
+  }
+
+  // Récupère l'image mise en avant via _embedded['wp:featuredmedia'][0].source_url si disponible
+  let imageUrl = "";
+  if (post._embedded && post._embedded["wp:featuredmedia"] && post._embedded["wp:featuredmedia"][0]?.source_url) {
+    imageUrl = post._embedded["wp:featuredmedia"][0].source_url;
+  }
+
+  // Extraction du media embarqué (iframe vidéo/podcast) depuis le contenu
+  let embeddedMedia: { type: "youtube" | "podcast"; url: string } | null = null;
+  const content = post.content?.rendered || "";
+  const iframeMatches = [...content.matchAll(/<iframe[^>]*src=["']([^"']+)["'][^>]*>/gi)];
+  if (iframeMatches.length > 0) {
+    const videoIframe = iframeMatches.find((m) => isYoutubeUrl(m[1]));
+    if (videoIframe) {
+      embeddedMedia = { type: "youtube", url: videoIframe[1] };
+    } else {
+      // Podcast
+      const podcastIframe = iframeMatches.find((m) => m[1].toLowerCase().includes("mixcloud") || m[1].toLowerCase().includes("spotify") || m[1].toLowerCase().includes("soundcloud"));
+      if (podcastIframe) {
+        embeddedMedia = { type: "podcast", url: podcastIframe[1] };
+      }
+    }
+  }
+
+  const article: Article = {
+    title: typeof post.title === "object" && post.title?.rendered ? post.title.rendered : String(post.title),
+    excerpt: typeof post.excerpt === "object" && post.excerpt?.rendered ? post.excerpt.rendered : String(post.excerpt),
+    categories,
+    tags,
+    imageUrl,
+    link: `/posts/${post.slug}`,
+    isPinned: !!post.sticky,
+    date: post.date,
+    mediaUrl: embeddedMedia?.url,
+    mediaType: embeddedMedia?.type,
+  };
+
   let illustration: React.ReactNode = null;
-  if (article.mediaUrl && article.mediaType && (article.mediaType === "youtube" || article.mediaType === "podcast")) {
-    // Show video or podcast iframe
+  if (embeddedMedia) {
     illustration = (
       <iframe
-        src={article.mediaUrl}
+        src={embeddedMedia.url}
         className="absolute inset-0 w-full h-full"
-        allow={article.mediaType === "youtube" ? "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" : "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"}
-        allowFullScreen={article.mediaType === "youtube"}
+        allow={embeddedMedia.type === "youtube" ? "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" : "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"}
+        allowFullScreen={embeddedMedia.type === "youtube"}
         loading="lazy"
         title={article.title}
       />
     );
   } else {
-    // Fallback to image
     illustration = (
       <img
         src={article.imageUrl}
@@ -47,9 +152,9 @@ export const LastArticleSection: React.FC<LastArticleSectionProps> = ({ article 
     );
   }
   return (
-    <section className="flex flex-col md:flex-row gap-8 items-stretch w-full py-8">
+    <section className="flex flex-col md:flex-row gap-8 items-stretch w-full pb-8">
       {/* Left: Infos */}
-      <div className="md:w-1/3 flex flex-col justify-between gap-4 py-4 border-y-[1px] border-red-500">
+      <div className="md:w-1/3 flex flex-col justify-between gap-4 py-4 border-y border-red-500">
         <div>
           <Link href={article.link} className="hover:underline">
             <h2 className="text-2xl md:text-4xl font-title font-normal leading-snug letter-spacing-widest group-hover:underline mb-2"><DecodeFr>{article.title}</DecodeFr></h2>
@@ -58,24 +163,24 @@ export const LastArticleSection: React.FC<LastArticleSectionProps> = ({ article 
         </div>
         <div>
             <div className="flex flex-wrap gap-2">
-              {article.categories.map((cat) => (
+              {article.categories.slice(0, 1).map((cat) => (
                 <Link
-                  key={cat}
-                  href={`/posts/categories/${encodeURIComponent(cat.toLowerCase().replace(/\s+/g, '-'))}`}
-                  className="text-xs text-(--color-red) border border-(--color-red) mb-4 px-2 py-1 transition-colors"
+                  key={cat.id}
+                  href={`/posts/categories/${encodeURIComponent(cat.slug)}`}
+                  className="text-sm text-(--color-red) border border-(--color-red) mb-4 px-2 py-1 transition-colors"
                 >
-                  {cat}
+                  {cat.name}
                 </Link>
               ))}
             </div>
             <div className="flex flex-wrap gap-2">
               {article.tags.map((tag) => (
                 <Link
-                  key={tag}
-                  href={`/posts/tags/${encodeURIComponent(tag.toLowerCase().replace(/\s+/g, '-'))}`}
-                  className="text-xs text-(--color-yellow) border border-(--color-yellow) px-2 py-1 transition-colors"
+                  key={tag.id}
+                  href={`/${encodeURIComponent(tag.slug)}`}
+                  className="text-sm text-(--color-yellow) border border-(--color-yellow) px-2 py-1 transition-colors"
                 >
-                  #{tag}
+                  {tag.name}
                 </Link>
               ))}
             </div>
@@ -84,11 +189,11 @@ export const LastArticleSection: React.FC<LastArticleSectionProps> = ({ article 
       {/* Right: Image (2/3) */}
       <div className="md:w-2/3 flex items-center justify-center">
         <a href={article.link} className="block w-full h-full">
-          <div className="w-full h-full min-h-[240px] md:min-h-[320px] lg:min-h-[400px] flex-1 relative">
+          <div className="w-full h-full min-h-60 md:min-h-80 lg:min-h-100 flex-1 relative">
             {illustration}
           </div>
         </a>
       </div>
     </section>
   );
-};
+}

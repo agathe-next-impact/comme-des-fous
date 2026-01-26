@@ -15,7 +15,7 @@ export function StickersGallery({ images }: StickersGalleryProps) {
   return (
     <>
     <div className='w-full border-b border-b-yellow-500 my-24'>
-      <h2 className="text-5xl md:text-6xl font-title font-medium mb-4">Ste Anne est à nous ! La rue est à nous !</h2>
+      <h2 className="text-5xl md:text-6xl font-title font-medium mb-4">Sainte-Anne est à nous ! La rue est à nous !</h2>
     </div>
     <div
       className="masonry-gallery"
