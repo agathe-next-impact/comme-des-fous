@@ -703,7 +703,7 @@ export default function DomeGallery({
     <div className='w-full border-b border-b-blue-500 my-24'>
       <h2 className="text-5xl md:text-6xl font-title font-medium mb-4">Hall of Fame</h2>
     </div>
-    <div className='w-[calc(100vw - 20px)] h-screen'>
+    <div className='w-[calc(100vw - 20px)] h-[60vh] md:h-screen'>
     <div
       ref={rootRef}
       className="sphere-root"
