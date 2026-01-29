@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { URLRewriter } from "@/components/url-rewriter";
 
 import type { Metadata } from "next";
-import { decodeHtmlEntities } from "@/lib/metadata";
+import { decodeHtmlEntities, generateOrganizationSchema } from "@/lib/metadata";
 
 // ✅ Polices principales optimisées
 const belanosima = Belanosima({
@@ -84,6 +84,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const organizationSchema = generateOrganizationSchema();
+  
   return (
     <html 
       lang="fr" 
@@ -96,6 +98,12 @@ export default function RootLayout({
         quicksand.variable
       )}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+      </head>
       <body className={cn("min-h-screen min-w-screen antialiased", openSans.className)}>
         <URLRewriter />   
         <ThemeProvider

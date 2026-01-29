@@ -8,7 +8,7 @@ import {
   scrapePostEmbeddedMedia,
   getPostComments,
 } from "@/lib/wordpress";
-import { generateContentMetadata, stripHtml, decodeHtmlEntities } from "@/lib/metadata";
+import { generateContentMetadata, stripHtml, decodeHtmlEntities, generateArticleSchema, generateBreadcrumbSchema, combineSchemas } from "@/lib/metadata";
 import { Section, Container, Article, Prose } from "@/components/craft";
 import Image from "next/image";
 import dynamic from "next/dynamic";
@@ -55,6 +55,11 @@ export async function generateMetadata({
   // Extraction de l'URL de l'image mise en avant via les données embedded
   const imageUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
 
+  // Extraire les informations enrichies
+  const author = post._embedded?.['author']?.[0];
+  const category = post._embedded?.['wp:term']?.[0]?.[0]; // Première catégorie
+  const tags = post._embedded?.['wp:term']?.[1]?.map((tag: any) => tag.name) || [];
+
   return generateContentMetadata({
     title: post.title.rendered,
     description: post.excerpt?.rendered 
@@ -63,7 +68,12 @@ export async function generateMetadata({
     slug: post.slug,
     basePath: "posts",
     imageUrl,
-    content: post, // ✅ Passer le contenu complet pour extraction de l'image
+    content: post,
+    publishedTime: post.date,
+    modifiedTime: post.modified,
+    authors: author ? [author.name] : undefined,
+    section: category?.name,
+    tags: tags.length > 0 ? tags : undefined,
   });
 }
 
@@ -97,8 +107,37 @@ export default async function Page({
     year: "numeric",
   });
 
+  // Générer les données structurées JSON-LD
+  const imageUrl = featuredMedia?.source_url;
+  const articleSchema = generateArticleSchema({
+    title: post.title.rendered,
+    description: post.excerpt?.rendered 
+      ? stripHtml(post.excerpt.rendered) 
+      : stripHtml(post.content.rendered).slice(0, 200) + "...",
+    slug: post.slug,
+    basePath: "posts",
+    imageUrl,
+    publishedTime: post.date,
+    modifiedTime: post.modified,
+    authorName: author?.name,
+    authorUrl: author?.link,
+    section: category?.name,
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Accueil", url: "/" },
+    { name: "Blog", url: "/posts" },
+    { name: decodeHtmlEntities(post.title.rendered), url: `/posts/${post.slug}` },
+  ]);
+
+  const jsonLd = combineSchemas(articleSchema, breadcrumbSchema);
+
   return (
     <div className="mt-4 md:mt-14">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd }}
+        />
         <Hero
           titre={decodeHtmlEntities(post.title.rendered)}
           sousTitre=""

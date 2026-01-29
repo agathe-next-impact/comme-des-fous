@@ -116,6 +116,11 @@ interface ContentMetadataOptions {
   basePath?: "posts" | "pages";
   imageUrl?: string;
   content?: Post | any;
+  publishedTime?: string;
+  modifiedTime?: string;
+  authors?: string[];
+  section?: string;
+  tags?: string[];
 }
 
 export function generateContentMetadata({
@@ -125,6 +130,11 @@ export function generateContentMetadata({
   basePath,
   imageUrl,
   content,
+  publishedTime,
+  modifiedTime,
+  authors,
+  section,
+  tags,
 }: ContentMetadataOptions): Metadata {
   // ✅ Nettoyage et encodage correct des textes
   const cleanTitle = sanitizeMetaText(title);
@@ -157,28 +167,48 @@ export function generateContentMetadata({
     finalImageUrl = `${siteConfig.site_domain}${finalImageUrl}`;
   }
 
+  // Construire les métadonnées Open Graph enrichies
+  const openGraphData: any = {
+    title: cleanTitle,
+    description: cleanDescription,
+    type: "article",
+    url: fullUrl,
+    siteName: siteConfig.site_name,
+    locale: "fr_FR",
+    images: [
+      {
+        url: finalImageUrl,
+        width: 1200,
+        height: 630,
+        alt: cleanTitle,
+      },
+    ],
+  };
+
+  // Ajouter les métadonnées article si disponibles
+  if (publishedTime) {
+    openGraphData.publishedTime = publishedTime;
+  }
+  if (modifiedTime) {
+    openGraphData.modifiedTime = modifiedTime;
+  }
+  if (authors && authors.length > 0) {
+    openGraphData.authors = authors;
+  }
+  if (section) {
+    openGraphData.section = section;
+  }
+  if (tags && tags.length > 0) {
+    openGraphData.tags = tags;
+  }
+
   return {
     title: cleanTitle,
     description: cleanDescription,
     alternates: {
       canonical: fullUrl,
     },
-    openGraph: {
-      title: cleanTitle,
-      description: cleanDescription,
-      type: "article",
-      url: fullUrl,
-      siteName: siteConfig.site_name,
-      locale: "fr_FR",
-      images: [
-        {
-          url: finalImageUrl,
-          width: 1200,
-          height: 630,
-          alt: cleanTitle,
-        },
-      ],
-    },
+    openGraph: openGraphData,
     twitter: {
       card: "summary_large_image",
       title: cleanTitle,
@@ -198,4 +228,145 @@ export function truncateHtml(html: string, maxWords: number): string {
   const words = text.split(/\s+/);
   if (words.length <= maxWords) return text;
   return words.slice(0, maxWords).join(" ") + "...";
+}
+
+/**
+ * Génère les données structurées JSON-LD pour Organization
+ */
+export function generateOrganizationSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: siteConfig.site_name,
+    url: siteConfig.site_domain,
+    logo: `${siteConfig.site_domain}/logo.png`,
+    sameAs: [
+      // Ajouter ici les réseaux sociaux si disponibles
+    ],
+  };
+}
+
+/**
+ * Génère les données structurées JSON-LD pour Article
+ */
+export function generateArticleSchema({
+  title,
+  description,
+  slug,
+  basePath = 'posts',
+  imageUrl,
+  publishedTime,
+  modifiedTime,
+  authorName,
+  authorUrl,
+  section,
+}: {
+  title: string;
+  description: string;
+  slug: string;
+  basePath?: 'posts' | 'pages';
+  imageUrl?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  authorName?: string;
+  authorUrl?: string;
+  section?: string;
+}) {
+  const path = `/${basePath}/${slug}`;
+  const fullUrl = `${siteConfig.site_domain}${path}`;
+  const cleanTitle = sanitizeMetaText(title);
+  const cleanDescription = sanitizeMetaText(description);
+  
+  const schema: any = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: cleanTitle,
+    description: cleanDescription,
+    url: fullUrl,
+    datePublished: publishedTime,
+    dateModified: modifiedTime || publishedTime,
+    author: authorName ? {
+      '@type': 'Person',
+      name: authorName,
+      url: authorUrl,
+    } : undefined,
+    publisher: {
+      '@type': 'Organization',
+      name: siteConfig.site_name,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${siteConfig.site_domain}/logo.png`,
+      },
+    },
+  };
+
+  if (imageUrl) {
+    schema.image = {
+      '@type': 'ImageObject',
+      url: imageUrl,
+      width: 1200,
+      height: 630,
+    };
+  }
+
+  if (section) {
+    schema.articleSection = section;
+  }
+
+  return schema;
+}
+
+/**
+ * Génère les données structurées JSON-LD pour WebPage
+ */
+export function generateWebPageSchema({
+  title,
+  description,
+  slug,
+  basePath,
+}: {
+  title: string;
+  description: string;
+  slug: string;
+  basePath?: 'posts' | 'pages';
+}) {
+  const path = basePath ? `/${basePath}/${slug}` : `/${slug}`;
+  const fullUrl = `${siteConfig.site_domain}${path}`;
+  const cleanTitle = sanitizeMetaText(title);
+  const cleanDescription = sanitizeMetaText(description);
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: cleanTitle,
+    description: cleanDescription,
+    url: fullUrl,
+    publisher: {
+      '@type': 'Organization',
+      name: siteConfig.site_name,
+    },
+  };
+}
+
+/**
+ * Génère les données structurées JSON-LD pour BreadcrumbList
+ */
+export function generateBreadcrumbSchema(items: { name: string; url: string }[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: `${siteConfig.site_domain}${item.url}`,
+    })),
+  };
+}
+
+/**
+ * Combine plusieurs schémas JSON-LD en un seul tableau
+ */
+export function combineSchemas(...schemas: any[]): string {
+  return JSON.stringify(schemas.filter(Boolean));
 }
