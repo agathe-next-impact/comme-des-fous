@@ -309,6 +309,10 @@ export default function DomeGallery({
     [dragDampening, maxVerticalRotationDeg, stopInertia]
   );
 
+  // Détecter si c'est un appareil tactile (sans souris précise)
+  const isTouchDevice = typeof window !== 'undefined' && 
+    (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+
   useGesture(
     {
       onDragStart: ({ event }) => {
@@ -322,18 +326,18 @@ export default function DomeGallery({
 
         const evt = event as PointerEvent;
 
-        // Si c'est le premier mouvement, vérifier la direction sur mobile
+        // Si c'est le premier mouvement, vérifier la direction sur tactile
         if (first && startPosRef.current && !isDraggingRef.current) {
           const dx = Math.abs(evt.clientX - startPosRef.current.x);
           const dy = Math.abs(evt.clientY - startPosRef.current.y);
           
-          // Sur mobile, si le mouvement est plus vertical qu'horizontal, abandonner le drag
-          if ('ontouchstart' in window && dy > dx * 1.5) {
+          // Sur appareil tactile, rejeter si le mouvement est vertical
+          if (isTouchDevice && dy > dx) {
             draggingRef.current = false;
             return;
           }
           
-          // Confirmer le drag horizontal
+          // Confirmer le drag (horizontal sur tactile, libre sur desktop)
           stopInertia();
           isDraggingRef.current = true;
           draggingRef.current = true;
@@ -351,11 +355,14 @@ export default function DomeGallery({
           if (dist2 > 16) movedRef.current = true;
         }
 
-        const nextX = clamp(
-          startRotRef.current.x - dyTotal / dragSensitivity,
-          -maxVerticalRotationDeg,
-          maxVerticalRotationDeg
-        );
+        // Sur tactile, ne permettre que la rotation horizontale (Y axis)
+        const nextX = isTouchDevice 
+          ? rotationRef.current.x // Garder X constant sur tactile
+          : clamp(
+              startRotRef.current.x - dyTotal / dragSensitivity,
+              -maxVerticalRotationDeg,
+              maxVerticalRotationDeg
+            );
         const nextY = wrapAngleSigned(startRotRef.current.y + dxTotal / dragSensitivity);
 
         if (rotationRef.current.x !== nextX || rotationRef.current.y !== nextY) {
