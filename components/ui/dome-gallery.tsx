@@ -147,6 +147,7 @@ export default function DomeGallery({
   const startRotRef = useRef({ x: 0, y: 0 });
   const startPosRef = useRef<{ x: number; y: number } | null>(null);
   const draggingRef = useRef(false);
+  const isDraggingRef = useRef(false);
   const movedRef = useRef(false);
   const inertiaRAF = useRef<number | null>(null);
 
@@ -312,17 +313,36 @@ export default function DomeGallery({
     {
       onDragStart: ({ event }) => {
         if (focusedElRef.current) return;
-        stopInertia();
         const evt = event as PointerEvent;
-        draggingRef.current = true;
-        movedRef.current = false;
-        startRotRef.current = { ...rotationRef.current };
         startPosRef.current = { x: evt.clientX, y: evt.clientY };
+        isDraggingRef.current = false;
       },
-      onDrag: ({ event, last, velocity = [0, 0], direction = [0, 0], movement }) => {
-        if (focusedElRef.current || !draggingRef.current || !startPosRef.current) return;
+      onDrag: ({ event, last, velocity = [0, 0], direction = [0, 0], movement, first }) => {
+        if (focusedElRef.current) return;
 
         const evt = event as PointerEvent;
+
+        // Si c'est le premier mouvement, vérifier la direction sur mobile
+        if (first && startPosRef.current && !isDraggingRef.current) {
+          const dx = Math.abs(evt.clientX - startPosRef.current.x);
+          const dy = Math.abs(evt.clientY - startPosRef.current.y);
+          
+          // Sur mobile, si le mouvement est plus vertical qu'horizontal, abandonner le drag
+          if ('ontouchstart' in window && dy > dx * 1.5) {
+            draggingRef.current = false;
+            return;
+          }
+          
+          // Confirmer le drag horizontal
+          stopInertia();
+          isDraggingRef.current = true;
+          draggingRef.current = true;
+          movedRef.current = false;
+          startRotRef.current = { ...rotationRef.current };
+        }
+
+        if (!draggingRef.current || !startPosRef.current) return;
+
         const dxTotal = evt.clientX - startPosRef.current.x;
         const dyTotal = evt.clientY - startPosRef.current.y;
 
@@ -367,7 +387,14 @@ export default function DomeGallery({
         }
       }
     },
-    { target: mainRef, eventOptions: { passive: true } }
+    { 
+      target: mainRef, 
+      eventOptions: { passive: false },
+      drag: {
+        threshold: 10,
+        filterTaps: true
+      }
+    }
   );
 
   const openItemFromElement = (el: HTMLElement) => {

@@ -461,7 +461,7 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
         ref={contentRef}
         className={cn(
           "post-content",
-          "max-w-6xl mx-auto md:py-8",
+          "max-w-6xl xl:max-w-5xl mx-auto md:py-8",
           "prose prose-lg dark:prose-invert",
           "prose-headings:font-bold prose-headings:tracking-tight prose-headings:mt-12 prose-headings:mb-6 prose-headings:leading-tight",
           "prose-p:leading-relaxed prose-p:text-base",
@@ -480,7 +480,7 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
       />
 
       {media.length > 0 && (
-        <div className="max-w-6xl w-full mx-auto mt-12 border-t border-white/20 pt-8">
+        <div className="max-w-6xl xl:max-w-5xl w-full mx-auto mt-12 border-t border-white/20 pt-8">
           <h3 className="text-2xl font-bold mb-6">Médias</h3>
           <div className="md:w-3xl mx-auto grid grid-cols-1 gap-6">
             {media.map((item, index) => (
@@ -537,7 +537,7 @@ export function PostContent({ content, className, scrapedMedia = [] }: PostConte
                       item.type === 'podcast'
                         ? 'md:min-w-3xl w-full h-max aspect-[3/1]'
                         : item.type === 'social' && item.platform === 'instagram'
-                          ? 'md:w-base aspect-[3/5] m-0 p-0'
+                          ? 'md:w-base aspect-[4/7] m-0 p-0'
                           : item.type === 'social'
                             ? 'w-full md:min-w-3xl md:w-full aspect-[4/3]'
                             : 'w-full md:min-w-3xl md:w-full aspect-video'

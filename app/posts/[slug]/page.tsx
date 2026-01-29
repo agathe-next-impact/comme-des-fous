@@ -102,10 +102,11 @@ export default async function Page({
         <Hero
           titre={decodeHtmlEntities(post.title.rendered)}
           sousTitre=""
+          showLogo={false}
         />
 
-          <Container className="w-full mt-4 md:mt-8">
-              <div className="w-full flex flex-col md:flex-row items-center justify-between md:gap-4 md:mb-4">
+          <Container className="w-full max-w-6xl xl:max-w-5xl mt-4 md:mt-8">
+              <div className="w-full flex flex-col md:flex-row md:items-center justify-between md:gap-4 md:mb-4">
                 <div>
                 <div className="flex justify-between items-center gap-4 md:mb-4 pb-4">
                   <div className="flex gap-2 items-center">
@@ -118,12 +119,12 @@ export default async function Page({
                 </div>
                 
                 {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 md:mb-4 pb-4">
+                  <div className="flex flex-wrap md:flex-nowrap gap-2 md:mb-4 pb-4">
                     {tags.map((tag) => (
                       <a 
                         key={tag.id}
                         href={`/${tag.slug}`}
-                        className="text-sm text-(--color-blue) px-2 pt-0.5 pb-1 hover:text-white hover:bg-(--color-blue) border border-(--color-blue) transition-colors"
+                        className="w-max text-sm text-(--color-blue) px-2 pt-0.5 pb-1 hover:text-white hover:bg-(--color-blue) border border-(--color-blue) transition-colors"
                       >
                         {tag.name}
                       </a>

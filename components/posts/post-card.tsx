@@ -161,9 +161,6 @@ export function PostCard({
     }
   };
 
-  // Generate random color for posts without media
-  const colors = ["yellow", "red", "blue"];
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
   // Helper for iframe error handling
   const handleIframeError = () => setIframeError(true);
@@ -236,9 +233,13 @@ export function PostCard({
               onError={() => setImageError(true)}
             />
           ) : (
-            <div
-              className="absolute inset-0 w-full h-full widget-404"
-              style={{ backgroundColor: randomColor }}
+            <Image
+              className="absolute inset-0 w-full h-full object-contain p-4 bg-white"
+              src="/logo.png"
+              alt={post.title?.rendered || "Logo"}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={() => setImageError(true)}
             />
           )}
         </div>

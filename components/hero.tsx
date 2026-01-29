@@ -7,27 +7,30 @@ interface HeroProps {
     titre: string;
     sousTitre?: string;
     className?: string;
+    showLogo?: boolean;
 }
 
-export default function Hero({ titre, sousTitre, className }: HeroProps) {
+export default function Hero({ titre, sousTitre, className, showLogo = true }: HeroProps) {
   const pathname = usePathname();
   const textSize = titre.length > 30 ? "text-2xl md:text-[3.5vw]" : titre.length > 23 ? "text-2xl md:text-[5.7vw]" : titre.length > 19 ? "text-2xl md:text-[6.2vw]" : titre.length > 15 ? "text-3xl md:text-[7.7vw]" : "text-3xl md:text-[9.5vw]";
     return (
-        <div className="flex items-center px-4 pb-4 md:pb-6 pt-22">
-            <div>
+        <div className="flex items-start md:items-center px-4 pb-4 md:pb-6 pt-22">
+            {showLogo && (
+            <div className="mr-4 md:mr-8">
                 <Image 
                     src="/logo.png"
                     alt="underline"
                     width={150}
                     height={20}
-                    className="object-contain max-w-12 md:max-w-18"
+                    className="object-contain max-w-16 md:max-w-42 md:-mt-8"
                 />
             </div>
-            <div className="flex flex-col ml-4 md:ml-8">
+            )}
+            <div className="flex flex-col">
                 <h1 className={`w-full max-w-[100vw] font-title font-semibold ${textSize} tracking-tight ${className}${pathname === "/" ? "text-white" : ""}`}>
                     <DecodeFr>{titre}</DecodeFr>
                 </h1>
-                <div className="mt-0 flex justify-center gap-4">
+                <div className="mt-0 md:ml-4 flex justify-center gap-4">
                 {sousTitre && (
                         <h2 className={`w-full font-title font-normal group-hover:underline text-lg md:text-3xl ${className}${pathname === "/" ? "text-white" : ""}`}>
                             <DecodeFr>{sousTitre}</DecodeFr>

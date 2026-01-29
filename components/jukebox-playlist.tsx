@@ -110,7 +110,7 @@ function SongSlot({
             className={cn(
               "font-medium truncate",
               "text-slate-900 dark:text-blue-400",
-              hasLink ? "text-red-500 dark:text-red-400 group-hover:text-yellow-500" : "group-hover:text-blue-500",
+              hasLink ? "text-red-500 dark:text-red-400 group-hover:text-yellow-500" : "text-blue-500 group-hover:text-blue-500",
               "transition-colors",
               isSelected && "text-blue-500"
             )}
@@ -120,7 +120,7 @@ function SongSlot({
           <p
             className={cn(
               "text-sm truncate",
-              "text-slate-500 dark:text-white/50"
+              "text-slate-400"
             )}
           >
             {song.artist}
@@ -249,7 +249,7 @@ export function JukeboxPlaylist({
 
         {/* Reveal Controls */}
         {hasMoreSongs && (
-          <div className="border-t border-slate-200 dark:border-white/10 p-4 bg-white/60 dark:bg-transparent rounded-b-2xl">
+          <div className="dark:border-white/10 p-4 dark:bg-transparent rounded-b-2xl">
             <div className="flex items-center justify-center gap-4">
               <button
                 onClick={revealMore}
@@ -284,7 +284,7 @@ export function JukeboxPlaylist({
 
         {/* All revealed indicator */}
         {!hasMoreSongs && revealedCount > initialRevealCount && (
-          <div className="border-t border-slate-200 dark:border-white/10 p-4 bg-white/60 dark:bg-transparent rounded-b-2xl">
+          <div className="border-t border-slate-200 dark:border-white/10 p-4 dark:bg-transparent rounded-b-2xl">
             <div className="flex items-center justify-center gap-2 text-slate-600 dark:text-white/50">
               <Disc3 className="w-5 h-5" />
               <span className="text-sm">Toute la playlist est visible</span>

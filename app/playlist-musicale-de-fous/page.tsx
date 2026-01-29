@@ -113,37 +113,19 @@ export default async function PlaylistMusicaleDeFousPage() {
 		<div className="md:mt-14">
 			<Hero titre="PLAYLIST MUSICALE DE FOUS" sousTitre={""} />
 
-                <div className="max-w-4xl mx-auto px-4 md:pt-16 md:pb-8">
-				{youtubeSrc && (
-					<div
-						className={cn(
-							"relative p-6 group flex flex-col not-prose",
-							"border border-white/20",
-							"hover:bg-white/5 transition-all duration-300",
-							"before:absolute before:top-0 before:left-0 before:w-3 before:h-3",
-							"before:border-t-2 before:border-l-2 before:border-yellow-500",
-							"after:absolute after:bottom-0 after:right-0 after:w-3 after:h-3",
-							"after:border-b-2 after:border-r-2 after:border-red-500",
-							"before:transition-all before:duration-300 after:transition-all after:duration-300",
-							"hover:before:w-6 hover:before:h-6 hover:after:w-6 hover:after:h-6"
-						)}
-					>
-                 
-						<div className="relative w-full aspect-video">
-							<iframe
-								src={youtubeSrc}
-								title="Playlist musicale"
-								className="absolute inset-0 w-full h-full"
-								allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-								allowFullScreen
-							/>
-						</div>
-						<span className="absolute top-2 right-2 text-xs bg-red-600 text-white px-2 py-1 rounded-full">
-							🎬 Vidéo
-						</span>
+                <div className="max-w-4xl mx-auto px-4 md:pt-16 md:pb-8">            
+						<iframe
+							data-testid="embed-iframe"
+							style={{ borderRadius: "12px" }}
+							src="https://open.spotify.com/embed/playlist/0FLO0JoeNqaMPwiFe3dYzG?utm_source=generator"
+							width="100%"
+							height="352"
+							frameBorder="0"
+							allowFullScreen
+							allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+							loading="lazy"
+						></iframe>
 
-					</div>                      
-				)}  
             </div>
 
 			<section className="max-w-4xl mx-auto px-4 pb-16 space-y-10">
