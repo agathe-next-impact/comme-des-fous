@@ -4,9 +4,13 @@ import { DecodeFr } from "./decode-fr";
 import Link from "next/link";
 import { truncateHtml } from "@/lib/utils";
 import { getRecentPosts } from "@/lib/wordpress";
+import { MediaFacade } from "./media-facade";
+import Image from "next/image";
 
-
-
+function getYoutubeId(url: string) {
+  const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
 
 interface TaxLink {
   id: number;
@@ -57,6 +61,7 @@ async function fetchLastNonPinnedArticle(): Promise<Article | null> {
   function getImageUrl(post: any): string {
     return post.featured_media?.source_url || "";
   }
+
 
   return {
     title: typeof post.title === "object" && post.title?.rendered ? post.title.rendered : String(post.title),
@@ -131,23 +136,31 @@ export default async function LastArticleSection() {
 
   let illustration: React.ReactNode = null;
   if (embeddedMedia) {
+    let posterUrl = article.imageUrl;
+    if (embeddedMedia.type === "youtube") {
+      const videoId = getYoutubeId(embeddedMedia.url);
+      if (videoId) {
+        posterUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      }
+    }
+
     illustration = (
-      <iframe
-        src={embeddedMedia.url}
-        className="absolute inset-0 w-full h-full"
-        allow={embeddedMedia.type === "youtube" ? "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" : "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"}
-        allowFullScreen={embeddedMedia.type === "youtube"}
-        loading="lazy"
+      <MediaFacade
+        mediaUrl={embeddedMedia.url}
+        mediaType={embeddedMedia.type}
+        posterUrl={posterUrl}
         title={article.title}
       />
     );
-  } else {
+  } else if (article.imageUrl) {
     illustration = (
-      <img
+      <Image
         src={article.imageUrl}
         alt={article.title}
-        className="absolute inset-0 w-full h-full object-cover shadow-md"
-        style={{ objectFit: 'cover' }}
+        fill
+        className="object-cover shadow-md"
+        sizes="(max-width: 768px) 100vw, 66vw"
+        priority
       />
     );
   }

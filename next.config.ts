@@ -38,6 +38,18 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https" as const,
+        hostname: "img.youtube.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https" as const,
+        hostname: "i.ytimg.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
     // ✅ Optimisations des images pour de meilleures performances
     formats: ["image/avif", "image/webp"],
