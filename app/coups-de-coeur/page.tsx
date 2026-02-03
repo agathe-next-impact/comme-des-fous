@@ -143,7 +143,13 @@ export default async function CoupsDeCoeurPage() {
     notFound();
   }
 
-  const { items, headerContent } = parseGutenbergBlocks(page.content.rendered);
+  // Remplacer le domaine staging par le domaine de production dans le contenu
+  const cleanContent = page.content.rendered.replace(
+    /lightskyblue-penguin-597208\.hostingersite\.com/g, 
+    'commedesfous.com'
+  );
+
+  const { items, headerContent } = parseGutenbergBlocks(cleanContent);
 
   return (
     <div className="md:mt-14">
@@ -165,7 +171,7 @@ export default async function CoupsDeCoeurPage() {
         <section className="max-w-4xl mx-auto px-4 pb-16">
           <div
             className="prose prose-lg dark:prose-invert prose-a:text-primary"
-            dangerouslySetInnerHTML={{ __html: page.content.rendered }}
+            dangerouslySetInnerHTML={{ __html: cleanContent }}
           />
         </section>
       )}
