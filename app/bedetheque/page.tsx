@@ -86,6 +86,12 @@ export default async function BedethequePage() {
     }
   }
 
+  // Correction des URLs images pour utiliser le sous-domaine admin (évite les 403 sur le domaine principal protégé)
+  const galleryImages = BD_IMAGES.map(img => ({
+    ...img,
+    src: img.src.replace("https://commedesfous.com", "https://admin.commedesfous.com")
+  }));
+
   return (
     <main className="min-h-screen">
       <Hero 
@@ -95,10 +101,10 @@ export default async function BedethequePage() {
       
       <section className="container mx-auto px-4 py-12">
         <p className="text-center text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-          {BD_IMAGES.length} bandes dessinées à découvrir
+          {galleryImages.length} bandes dessinées à découvrir
         </p>
         
-        <BedethequeGallery images={BD_IMAGES} />
+        <BedethequeGallery images={galleryImages} />
       </section>
     </main>
   );

@@ -79,6 +79,7 @@ export function BedethequeGallery({ images }: BedethequeGalleryProps) {
           src={item.img}
           alt={image?.alt || image?.title || `BD`}
           fill
+          unoptimized // Évite les erreurs 403 si le serveur distant bloque l'optimiseur Next.js
           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
           className={cn(
             "object-contain transition-opacity duration-300",
@@ -175,6 +176,7 @@ export function BedethequeGallery({ images }: BedethequeGalleryProps) {
               src={selectedImage.src}
               alt={selectedImage.alt || selectedImage.title || "BD"}
               fill
+              unoptimized // Évite les erreurs 403 en lightbox aussi
               sizes="(max-width: 1024px) 100vw, 80vw"
               className="object-contain"
               priority

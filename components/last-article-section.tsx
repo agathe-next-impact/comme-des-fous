@@ -1,5 +1,5 @@
 import React from "react";
-import { isYoutubeUrl } from "@/lib/media-utils";
+import { extractMediaFromPost } from "@/lib/extract-media";
 import { DecodeFr } from "./decode-fr";
 import Link from "next/link";
 import { truncateHtml } from "@/lib/utils";
@@ -104,22 +104,9 @@ export default async function LastArticleSection() {
     imageUrl = post._embedded["wp:featuredmedia"][0].source_url;
   }
 
-  // Extraction du media embarqué (iframe vidéo/podcast) depuis le contenu
-  let embeddedMedia: { type: "youtube" | "podcast"; url: string } | null = null;
-  const content = post.content?.rendered || "";
-  const iframeMatches = [...content.matchAll(/<iframe[^>]*src=["']([^"']+)["'][^>]*>/gi)];
-  if (iframeMatches.length > 0) {
-    const videoIframe = iframeMatches.find((m) => isYoutubeUrl(m[1]));
-    if (videoIframe) {
-      embeddedMedia = { type: "youtube", url: videoIframe[1] };
-    } else {
-      // Podcast
-      const podcastIframe = iframeMatches.find((m) => m[1].toLowerCase().includes("mixcloud") || m[1].toLowerCase().includes("spotify") || m[1].toLowerCase().includes("soundcloud"));
-      if (podcastIframe) {
-        embeddedMedia = { type: "podcast", url: podcastIframe[1] };
-      }
-    }
-  }
+  // Extraction du media embarqué via l'utilitaire partagé
+  const { mediaUrl, mediaType } = extractMediaFromPost(post);
+  const embeddedMedia = mediaUrl && mediaType ? { type: mediaType, url: mediaUrl } : null;
 
   const article: Article = {
     title: typeof post.title === "object" && post.title?.rendered ? post.title.rendered : String(post.title),
