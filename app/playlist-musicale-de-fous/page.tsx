@@ -90,7 +90,12 @@ export default async function PlaylistMusicaleDeFousPage() {
 		const hrefMatch = lineHtml.match(/href=["']([^"']+)["']/i);
 		const urlMatch = lineHtml.match(/https?:\/\/\S+/i);
 		const linkRaw = hrefMatch?.[1] || urlMatch?.[0];
-		const link = linkRaw ? linkRaw.replace(/[),.;]*$/, "") : undefined;
+		let link = linkRaw ? linkRaw.replace(/[),.;]*$/, "") : undefined;
+
+		// Remplacement spécifique pour l'ancienne URL
+		if (link && link.includes('lightskyblue-penguin-597208.hostingersite.com')) {
+			link = link.replace('lightskyblue-penguin-597208.hostingersite.com', 'commedesfous.com');
+		}
 
 		// Nettoyer le texte de la ligne (supprimer balises, &nbsp;)
 		const text = lineHtml
