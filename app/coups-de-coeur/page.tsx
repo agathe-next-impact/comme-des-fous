@@ -1,6 +1,5 @@
 import { getPageBySlug } from "@/lib/wordpress";
 import { generateContentMetadata, stripHtml, decodeHtmlEntities } from "@/lib/metadata";
-import { DecodeFr } from "@/components/decode-fr";
 import { cn } from "@/lib/utils";
 import { notFound } from "next/navigation";
 
