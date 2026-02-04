@@ -143,9 +143,34 @@ export default async function CoupsDeCoeurPage() {
   }
 
   // Remplacer le domaine staging par le domaine de production dans le contenu
-  const cleanContent = page.content.rendered.replace(
+  let cleanContent = page.content.rendered.replace(
     /lightskyblue-penguin-597208\.hostingersite\.com/g, 
     'commedesfous.com'
+  );
+
+  // Configurer les liens : target="_blank" pour les liens externes, target="_self" pour les internes
+  cleanContent = cleanContent.replace(
+    /<a\s+(?:[^>]*?\s+)?href=["']([^"']*)["'][^>]*>/gi,
+    (match, href) => {
+      const isInternal = href.includes('commedesfous.com');
+
+      if (isInternal) {
+        // Lien interne : forcer _self ou supprimer _blank
+        if (/target=["']?_blank["']?/i.test(match)) {
+          return match.replace(/target=["']?_blank["']?/i, 'target="_self"');
+        }
+        return match;
+      } else {
+        // Lien externe : forcer _blank
+        if (/target=["']?_blank["']?/i.test(match)) return match;
+
+        if (/target=/i.test(match)) {
+          return match.replace(/target=["'][^"']*["']/i, 'target="_blank"');
+        }
+
+        return match.replace('<a ', '<a target="_blank" ');
+      }
+    }
   );
 
   const { items, headerContent } = parseGutenbergBlocks(cleanContent);
@@ -181,11 +206,13 @@ export default async function CoupsDeCoeurPage() {
 // Composant carte style post-card
 function CoupDeCoeurCard({ item }: { item: BlockItem }) {
   const CardWrapper = item.link ? "a" : "div";
+  const isInternal = item.link?.includes("commedesfous.com");
+  
   const cardProps = item.link
     ? {
         href: item.link,
-        target: "_blank",
-        rel: "noopener noreferrer",
+        target: isInternal ? "_self" : "_blank",
+        rel: isInternal ? undefined : "noopener noreferrer",
       }
     : {};
 

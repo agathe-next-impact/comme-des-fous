@@ -67,7 +67,11 @@ function SongSlot({
   const handleClick = () => {
     if (hasLink && song.link) {
       onSelect();
-      window.open(song.link, "_blank", "noopener,noreferrer")
+      if (song.link.includes("commedesfous.com")) {
+        window.open(song.link, "_self")
+      } else {
+        window.open(song.link, "_blank", "noopener,noreferrer")
+      }
       return
     }
     onSelect()
@@ -131,8 +135,8 @@ function SongSlot({
         {hasLink && (
           <a
             href={song.link}
-            target="_blank"
-            rel="noopener noreferrer"
+            target={song.link?.includes("commedesfous.com") ? "_self" : "_blank"}
+            rel={song.link?.includes("commedesfous.com") ? undefined : "noopener noreferrer"}
             onClick={(e) => e.stopPropagation()}
             className={cn(
               "flex-shrink-0 p-2 rounded-2xl",
