@@ -4,11 +4,12 @@ import { PodcastFeed } from "@/components/podcast-feed";
 import { PostsArchive } from "@/components/posts/posts-archive";
 import { getCategoryBySlug } from "@/lib/wordpress";
 import type { Metadata } from "next";
+import { decodeHtmlEntities } from '@/lib/metadata';
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "À ÉCOUTER",
+  title: decodeHtmlEntities("À ÉCOUTER"),
   description: "Sélection de podcasts, musiques et enregistrements audio à ne pas manquer",
   alternates: {
     canonical: "/posts/categories/a-ecouter",
@@ -28,14 +29,15 @@ export default async function AEcouterCategoryPage({
 
   
   return (
-    <Section>
-      <Container className="bg-(--color-blue)">
+    <>
+      <div className="bg-(--color-blue) mt-4">
         <Hero 
           titre="À ÉCOUTER" 
           sousTitre="Sélection de podcasts, musiques et enregistrements audio à ne pas manquer" 
           className="text-black"
         />
-      </Container>
+      </div>
+      <Section>
       <Container className="mt-8">
         <PodcastFeed feedUrl="https://feeds.acast.com/public/shows/comme-des-fous" maxEpisodes={15} />
         <PostsArchive 
@@ -46,5 +48,6 @@ export default async function AEcouterCategoryPage({
         />
       </Container>
     </Section>
+    </>
   );
 }

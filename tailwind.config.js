@@ -1,7 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: "class",
-  darkMode: "class", // <-- ceci est OBLIGATOIRE pour le mode dark via la classe
+  darkMode: "class", // Utilisation de la classe .dark
   content: [
     './app/**/*.{js,ts,jsx,tsx}',
     './components/**/*.{js,ts,jsx,tsx}',
@@ -10,11 +9,18 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"new-astro"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: [
+          'Open Sans',
+          'ui-sans-serif',
+          'system-ui',
+          'sans-serif',
+        ],
+        averia: ['Open Sans', 'sans-serif'],
+        belanosima: ['Belanosima', 'sans-serif'],
       },
     },
   },
-  plugins: [
+  plugins: [  
     require('@tailwindcss/typography'),
   ],
 };

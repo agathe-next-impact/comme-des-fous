@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
 
-export function SearchInput({ defaultValue }: { defaultValue?: string }) {
+export function SearchInput({ defaultValue, forcePostsPage }: { defaultValue?: string; forcePostsPage?: boolean }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
@@ -17,7 +17,10 @@ export function SearchInput({ defaultValue }: { defaultValue?: string }) {
     } else {
       params.delete("search");
     }
-    replace(`${pathname}?${params.toString()}`);
+    
+    // Si forcePostsPage est true, toujours rediriger vers /posts
+    const targetPath = forcePostsPage ? '/posts' : pathname;
+    replace(`${targetPath}?${params.toString()}`);
   }, 300);
 
   return (
@@ -27,6 +30,7 @@ export function SearchInput({ defaultValue }: { defaultValue?: string }) {
       placeholder="Rechercher des articles..."
       defaultValue={defaultValue}
       onChange={(e) => handleSearch(e.target.value)}
+      className="bg-transparent"
     />
   );
 }

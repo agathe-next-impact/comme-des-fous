@@ -261,7 +261,6 @@ const { data: posts, headers } = await getPostsPaginated(1, 9, {
   search: "nextjs"
 });
 
-console.log(`Found ${headers.total} posts across ${headers.totalPages} pages`);
 ```
 
 ## Cache Revalidation

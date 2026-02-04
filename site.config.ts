@@ -5,7 +5,7 @@ type SiteConfig = {
 };
 
 export const siteConfig: SiteConfig = {
-  site_name: "next-wp",
-  site_description: "Starter template for Headless WordPress with Next.js",
-  site_domain: "https://next-wp.com",
+  site_name: "Comme des fous",
+  site_description: "Blog culturel sur la santé mentale, la folie et la psychiatrie",
+  site_domain: "https://commedesfous.com",
 };

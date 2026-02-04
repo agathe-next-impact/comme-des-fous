@@ -32,11 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      console.log(
-        `Revalidating content: ${contentType}${
-          contentId ? ` (ID: ${contentId})` : ""
-        }`
-      );
+      
 
       // Revalidate specific content type tags
       revalidateTag("wordpress", { expire: 0 });

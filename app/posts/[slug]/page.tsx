@@ -6,11 +6,29 @@ import {
   getTagById,
   getAllPostSlugs,
   scrapePostEmbeddedMedia,
+  getPostComments,
 } from "@/lib/wordpress";
-import { generateContentMetadata, stripHtml } from "@/lib/metadata";
+import { generateContentMetadata, stripHtml, decodeHtmlEntities, generateArticleSchema, generateBreadcrumbSchema, combineSchemas } from "@/lib/metadata";
 import { Section, Container, Article, Prose } from "@/components/craft";
-import { badgeVariants } from "@/components/ui/badge";
+import Image from "next/image";
+import dynamic from "next/dynamic";
 import { PostContent } from "@/components/posts/post-content";
+
+// ✅ Lazy loading des composants non critiques pour réduire le bundle initial
+const RelatedPosts = dynamic(
+  () => import("@/components/posts/related-posts").then(mod => ({ default: mod.RelatedPosts })),
+  { loading: () => <div className="h-48 animate-pulse bg-white/5 rounded-lg" /> }
+);
+
+const CommentsList = dynamic(
+  () => import("@/components/posts/comments-list").then(mod => ({ default: mod.CommentsList })),
+  { loading: () => <div className="h-32 animate-pulse bg-white/5 rounded-lg" /> }
+);
+
+const CommentForm = dynamic(
+  () => import("@/components/posts/comment-form").then(mod => ({ default: mod.CommentForm })),
+  { loading: () => <div className="h-24 animate-pulse bg-white/5 rounded-lg" /> }
+);
 
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -34,11 +52,28 @@ export async function generateMetadata({
     return {};
   }
 
+  // Extraction de l'URL de l'image mise en avant via les données embedded
+  const imageUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
+
+  // Extraire les informations enrichies
+  const author = post._embedded?.['author']?.[0];
+  const category = post._embedded?.['wp:term']?.[0]?.[0]; // Première catégorie
+  const tags = post._embedded?.['wp:term']?.[1]?.map((tag: any) => tag.name) || [];
+
   return generateContentMetadata({
     title: post.title.rendered,
-    description: stripHtml(post.excerpt.rendered),
+    description: post.excerpt?.rendered 
+      ? stripHtml(post.excerpt.rendered) 
+      : stripHtml(post.content.rendered).slice(0, 200) + "...",
     slug: post.slug,
     basePath: "posts",
+    imageUrl,
+    content: post,
+    publishedTime: post.date,
+    modifiedTime: post.modified,
+    authors: author ? [author.name] : undefined,
+    section: category?.name,
+    tags: tags.length > 0 ? tags : undefined,
   });
 }
 
@@ -54,50 +89,68 @@ export default async function Page({
     notFound();
   }
 
-  const featuredMedia = post.featured_media
-    ? await getFeaturedMediaById(post.featured_media)
-    : null;
-  const author = await getAuthorById(post.author);
+  // ✅ Paralléliser tous les appels indépendants pour améliorer les performances
+  const [featuredMedia, author, category, tags, scrapedMedia, comments] = await Promise.all([
+    post.featured_media ? getFeaturedMediaById(post.featured_media) : null,
+    getAuthorById(post.author),
+    post.categories?.length ? getCategoryById(post.categories[0]) : null,
+    post.tags?.length 
+      ? Promise.all(post.tags.map(tagId => getTagById(tagId))).then(t => t.filter(Boolean))
+      : [],
+    scrapePostEmbeddedMedia(post.link),
+    getPostComments(post.id),
+  ]);
+
   const date = new Date(post.date).toLocaleDateString("fr-FR", {
     month: "long",
     day: "numeric",
     year: "numeric",
   });
-  const category = post.categories?.length ? await getCategoryById(post.categories[0]) : undefined;
-  
-  // Récupérer tous les tags du post
-  const tags = post.tags?.length 
-    ? (await Promise.all(post.tags.map(tagId => getTagById(tagId)))).filter(Boolean)
-    : [];
 
-  // Scraper les médias embarqués depuis la page publique WordPress
-  const scrapedMedia = await scrapePostEmbeddedMedia(post.link);
+  // Générer les données structurées JSON-LD
+  const imageUrl = featuredMedia?.source_url;
+  const articleSchema = generateArticleSchema({
+    title: post.title.rendered,
+    description: post.excerpt?.rendered 
+      ? stripHtml(post.excerpt.rendered) 
+      : stripHtml(post.content.rendered).slice(0, 200) + "...",
+    slug: post.slug,
+    basePath: "posts",
+    imageUrl,
+    publishedTime: post.date,
+    modifiedTime: post.modified,
+    authorName: author?.name,
+    authorUrl: author?.link,
+    section: category?.name,
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Accueil", url: "/" },
+    { name: "Blog", url: "/posts" },
+    { name: decodeHtmlEntities(post.title.rendered), url: `/posts/${post.slug}` },
+  ]);
+
+  const jsonLd = combineSchemas(articleSchema, breadcrumbSchema);
 
   return (
-    <Section>
-      <Container>
-        <Hero
-          titre={post.title.rendered}
-          sousTitre=""
+    <div className="mt-4 md:mt-14">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd }}
         />
-      </Container>
+        <Hero
+          titre={decodeHtmlEntities(post.title.rendered)}
+          sousTitre=""
+          showLogo={false}
+        />
 
-          <Container className="mt-8">
-
-                <div className="flex justify-between items-center gap-4 mb-4 pb-4">
-                  <h5>
-                    Publié {date} par{" "}
-                    {author?.name ? (
-                      <span>
-                        {author.name}
-                      </span>
-                    ) : (
-                      "Anonyme"
-                    )}
-                  </h5>
+          <Container className="w-full max-w-6xl xl:max-w-5xl mt-4 md:mt-8">
+              <div className="w-full flex flex-col md:flex-row md:items-center justify-between md:gap-4 md:mb-4">
+                <div>
+                <div className="flex justify-between items-center gap-4 md:mb-4 pb-4">
                   <div className="flex gap-2 items-center">
                     {category && (
-                      <span className="text-(--color-red) pt-0.5 pb-1 px-2 rounded-full hover:text-white border border-(--color-red) transition-colors">
+                      <span className="text-(--color-red) pt-0.5 pb-1 px-2 hover:text-white border border-(--color-red) transition-colors">
                         {category.name}
                       </span>
                     )}
@@ -105,22 +158,39 @@ export default async function Page({
                 </div>
                 
                 {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4 pb-4">
+                  <div className="flex flex-wrap md:flex-nowrap gap-2 md:mb-4 pb-4">
                     {tags.map((tag) => (
                       <a 
                         key={tag.id}
                         href={`/${tag.slug}`}
-                        className="text-sm text-(--color-blue) px-2 pt-0.5 pb-1 rounded-full hover:text-white hover:bg-(--color-blue) border border-(--color-blue) transition-colors"
+                        className="w-max text-sm text-(--color-blue) px-2 pt-0.5 pb-1 hover:text-white hover:bg-(--color-blue) border border-(--color-blue) transition-colors"
                       >
                         {tag.name}
                       </a>
                     ))}
                   </div>
                 )}
+              </div>
+              {featuredMedia?.source_url && (
+              <div className="w-full flex justify-end">
+                <Image
+                  src={featuredMedia?.source_url || "/logo.png"}
+                  alt={featuredMedia?.alt_text || "Featured media"}
+                  width={250}
+                  height={250}
+                  className="w-full md:w-fit object-cover rounded-md"
+                />
+              </div>
+              )}
+              </div>
                 
                 <PostContent content={post.content.rendered} scrapedMedia={scrapedMedia} />
-
+                <CommentsList comments={comments} />
+                <CommentForm postId={post.id} />
+                <RelatedPosts categoryId={category?.id} currentPostId={post.id} />
             </Container>
-          </Section>
+    </div>
+
+
       );
 }

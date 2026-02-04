@@ -13,9 +13,11 @@ export async function MostReadPostsList() {
 
   return (
     <section>
-      <h2 className="text-xl font-bold mb-4">Les plus lus</h2>
+      <div className="w-full border-b border-b-yellow-500 mt-16 mb-8">
+      <h2 className="text-5xl md:text-6xl font-title font-medium mb-4">Les plus vus</h2>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {mostRead.map((post) => (
+        {mostRead.slice(0, 4).map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
       </div>

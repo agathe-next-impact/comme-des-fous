@@ -1,13 +1,14 @@
 import Hero from "@/components/hero";
 import { Section, Container } from "@/components/craft";
 import type { Metadata } from "next";
+import { decodeHtmlEntities } from '@/lib/metadata';
 import { PostsArchive } from "@/components/posts/posts-archive";
 import { getCategoryBySlug } from "@/lib/wordpress";
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "À VOIR",
+  title: decodeHtmlEntities("À VOIR"),
   description: "Sélection d'articles, livres et documents à ne pas manquer",
   alternates: {
     canonical: "/posts/categories/a-voir",
@@ -27,10 +28,11 @@ export default async function AVoirCategoryPage({
 
   
   return (
-    <Section>
-      <Container className="bg-(--color-yellow)">
+    <>
+      <div className="bg-(--color-yellow) mt-4">
         <Hero titre="À VOIR" sousTitre="Sélection de films, documentaires et vidéos à ne pas manquer" className="text-black"/>
-      </Container>
+      </div>
+      <Section>
       <Container className="mt-8">
         <PostsArchive 
           category={category?.id ? String(category.id) : undefined}
@@ -40,5 +42,6 @@ export default async function AVoirCategoryPage({
         />
       </Container>
     </Section>
+    </>
   );
 }

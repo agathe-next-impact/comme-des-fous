@@ -5,6 +5,15 @@ const wordpressUrl = process.env.WORDPRESS_URL;
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  
+  // Augmenter le timeout pour la génération statique
+  staticPageGenerationTimeout: 120,
+  
+  // ✅ Ajouter : forcer le rendu dynamique pour les routes catch-all
+  experimental: {
+    // (dynamicIO option removed - not supported in ExperimentalConfig)
+  },
+  
   images: {
     remotePatterns: [
       ...(wordpressHostname
@@ -29,7 +38,24 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https" as const,
+        hostname: "img.youtube.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https" as const,
+        hostname: "i.ytimg.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
+    // ✅ Optimisations des images pour de meilleures performances
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 jours de cache
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
   },
   async redirects() {
     const redirectsList = [];

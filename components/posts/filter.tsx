@@ -11,6 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import type { Author, Tag, Category } from "@/lib/wordpress.d";
 
+/**
+ * Props pour le composant de filtre d'archives.
+ * Les tags doivent être limités aux 30 plus utilisés côté page d'archive.
+ */
 interface FilterPostsProps {
   authors: Author[];
   tags: Tag[];
@@ -82,72 +86,60 @@ export function FilterPosts({
           {selectedFilters.join(" | ")}
         </div>
       )}
-      <div className="grid md:grid-cols-[1fr_1fr_1fr_0.5fr] gap-6 my-4 z-10!">
-      <Select
-        value={initialTag || "all"}
-        onValueChange={(value) => handleFilterChange("tag", value)}
-      >
-        <SelectTrigger disabled={!hasTags}>
-          {hasTags ? <SelectValue placeholder="Tags" /> : "No tags found"}
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Tags</SelectItem>
-          {tags.map((tag) => (
-            <SelectItem key={tag.id} value={tag.id.toString()}>
-              {tag.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="grid md:grid-cols-[1fr_1fr_1fr] gap-6 my-4 z-10!">
+        <Select
+          value={initialTag || "all"}
+          onValueChange={(value) => handleFilterChange("tag", value)}
+        >
+          <SelectTrigger disabled={!hasTags}>
+            <SelectValue placeholder="Tags" />
+            {!hasTags && <span className="opacity-60">No tags found</span>}
+          </SelectTrigger>
+          {hasTags && (
+            <SelectContent>
+              <SelectItem value="all">Tags</SelectItem>
+              {[...tags]
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 50) // Limite à 30 tags les plus utilisés
+                .map((tag) => (
+                  <SelectItem key={tag.id} value={tag.id.toString()}>
+                    {tag.name} ({tag.count})
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          )}
+        </Select>
 
-      <Select
-        value={initialCategory || "all"}
-        onValueChange={(value) => handleFilterChange("category", value)}
-      >
-        <SelectTrigger disabled={!hasCategories}>
-          {hasCategories ? (
+        <Select
+          value={initialCategory || "all"}
+          onValueChange={(value) => handleFilterChange("category", value)}
+        >
+          <SelectTrigger disabled={!hasCategories}>
             <SelectValue placeholder="Categories" />
-          ) : (
-            "No categories found"
+            {!hasCategories && (
+              <span className="opacity-60">No categories found</span>
+            )}
+          </SelectTrigger>
+          {hasCategories && (
+            <SelectContent>
+              <SelectItem value="all">Categories</SelectItem>
+              {[...categories]
+                .sort((a, b) => a.name.localeCompare(b.name)) // Tri alphabétique
+                .map((category) => (
+                  <SelectItem key={category.id} value={category.id.toString()}>
+                    {category.name} ({category.count})
+                  </SelectItem>
+                ))}
+            </SelectContent>
           )}
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Categories</SelectItem>
-          {categories.map((category) => (
-            <SelectItem key={category.id} value={category.id.toString()}>
-              {category.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        </Select>
 
-    {authors.length > 0 && (
-      <Select
-        value={initialAuthor || "all"}
-        onValueChange={(value) => handleFilterChange("author", value)}
-      >
-        <SelectTrigger disabled={!hasAuthors} className="text-center">
-          {hasAuthors ? (
-            <SelectValue placeholder="Auteurs" />
-          ) : (
-            "No authors found"
-          )}
-        </SelectTrigger>
-        <SelectContent>
-        <SelectItem value="all">Auteurs</SelectItem>
-          {authors.map((author) => (
-            <SelectItem key={author.id} value={author.id.toString()}>
-              {author.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    )}
-
-      <Button variant="outline" onClick={handleResetFilters}>
-        Reset des filtres
-      </Button>
-    </div>
+        <Button variant="outline" onClick={handleResetFilters}>
+          Reset des filtres
+        </Button>
+      </div>
     </>
   );
 }
+
+

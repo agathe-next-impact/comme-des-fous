@@ -1,8 +1,11 @@
 "use client";
 
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { usePathname } from "next/navigation";
+import { SearchInput } from "@/components/posts/search-input";
+import Image from "next/image";
+import { useTheme } from "next-themes";
 
 export interface StaggeredMenuItem {
   label: string;
@@ -13,6 +16,7 @@ export interface StaggeredMenuItem {
 export interface StaggeredMenuSocialItem {
   label: string;
   link: string;
+  logo?: React.ReactNode; // Ajout du logo optionnel
 }
 
 export interface StaggeredMenuProps {
@@ -43,7 +47,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   displaySocials = true,
   displayItemNumbering = true,
   className,
-  // logoUrl = '/src/assets/logos/reactbits-gh-white.svg',
+  logoUrl = '',
   menuButtonColor = '#fff',
   openMenuButtonColor = '#fff',
   changeMenuColorOnOpen = true,
@@ -54,6 +58,31 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   onMenuClose,
 }: StaggeredMenuProps) => {
   const [open, setOpen] = useState(false);
+  // Header hide/show on scroll
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  React.useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (currentY > lastScrollY.current && currentY > 40) {
+            setShowHeader(false); // scroll down, hide
+          } else if (currentY <= 40) {
+            setShowHeader(true); // only show when at top
+          }
+          // Sinon, ne rien faire (le header reste caché)
+          lastScrollY.current = currentY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const openRef = useRef(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const preLayersRef = useRef<HTMLDivElement | null>(null);
@@ -74,20 +103,28 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const busyRef = useRef(false);
   const itemEntranceTweenRef = useRef<gsap.core.Tween | null>(null);
   const pathname = usePathname();
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
 
-  // Couleur du bouton selon la page
-  let computedMenuButtonColor = menuButtonColor;
-  let computedOpenMenuButtonColor = openMenuButtonColor;
-  const isLight = typeof window !== 'undefined' && document.body.classList.contains('light');
-  if (
-    pathname === "/posts/categories/a-voir" ||
-    pathname === "/posts/categories/a-ecouter" ||
-    pathname === "/posts/categories/a-lire" ||
-    (pathname === "/" && isLight)
-  ) {
-    computedMenuButtonColor = "#000";
-    computedOpenMenuButtonColor = "#000";
-  }
+  // Pages spéciales avec fond coloré (a-lire, a-voir, a-ecouter)
+  const isSpecialCategory = [
+    "/posts/categories/a-voir",
+    "/posts/categories/a-ecouter",
+    "/posts/categories/a-lire",
+    "/a-voir",
+    "/a-ecouter",
+    "/a-lire",
+  ].some((p) => pathname?.startsWith(p));
+
+  // En dark mode sur les pages spéciales : texte noir (fond coloré)
+  // Sinon : text-foreground s'adapte automatiquement au thème
+  const headerToneClass = isDarkMode && isSpecialCategory ? 'text-black' : 'text-foreground';
+
+  // Forcer l'input de recherche en noir sur les pages spéciales (fond coloré)
+  const searchToneClass = isSpecialCategory
+    ? "text-black [&_*]:text-black [&_input]:placeholder:text-black"
+    : headerToneClass;
+
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -111,11 +148,10 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 0, opacity: 0 });
       gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
       gsap.set(textInner, { yPercent: 0 });
-      if (toggleBtnRef.current) gsap.set(toggleBtnRef.current, { color: computedMenuButtonColor });
+      // Couleur du bouton gérée par Tailwind (text-foreground)
     });
     return () => ctx.revert();
-  }, [menuButtonColor, position]);
-  // Ajout des couleurs calculées dans les dépendances
+  }, [position]);
 
   const buildOpenTimeline = useCallback(() => {
     const panel = panelRef.current;
@@ -305,34 +341,12 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
   const animateColor = useCallback(
     (opening: boolean) => {
-      const btn = toggleBtnRef.current;
-      if (!btn) return;
+      // La couleur est maintenant gérée par les classes Tailwind (text-foreground)
+      // qui s'adaptent automatiquement au thème via les variables CSS
       colorTweenRef.current?.kill();
-      if (changeMenuColorOnOpen) {
-        const targetColor = opening ? computedOpenMenuButtonColor : computedMenuButtonColor;
-        colorTweenRef.current = gsap.to(btn, {
-          color: targetColor,
-          delay: 0.18,
-          duration: 0.3,
-          ease: 'power2.out'
-        });
-      } else {
-        gsap.set(btn, { color: computedMenuButtonColor });
-      }
     },
-    [computedOpenMenuButtonColor, computedMenuButtonColor, changeMenuColorOnOpen]
+    []
   );
-
-  React.useEffect(() => {
-    if (toggleBtnRef.current) {
-      if (changeMenuColorOnOpen) {
-        const targetColor = openRef.current ? computedOpenMenuButtonColor : computedMenuButtonColor;
-        gsap.set(toggleBtnRef.current, { color: targetColor });
-      } else {
-        gsap.set(toggleBtnRef.current, { color: computedMenuButtonColor });
-      }
-    }
-  }, [changeMenuColorOnOpen, computedMenuButtonColor, computedOpenMenuButtonColor]);
 
   const animateText = useCallback((opening: boolean) => {
     const inner = textInnerRef.current;
@@ -428,30 +442,41 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           return arr.map((c, i) => <div key={i} className="sm-prelayer" style={{ background: c }} />);
         })()}
       </div>
-      <header className="staggered-menu-header pl-4 bg-black" aria-label="Main navigation header">
-        <button
-          ref={toggleBtnRef}
-          className="sm-toggle md:text-3xl h-18 min-w-[3rem flex items-end justify-end ml-auto text-white"
-          aria-label={open ? 'Close MENU' : 'Open MENU'}
-          aria-expanded={open}
-          aria-controls="staggered-menu-panel"
-          onClick={toggleMenu}
-          type="button"
-        >
-          <span ref={textWrapRef} className="sm-toggle-textWrap" aria-hidden="true">
-            <span ref={textInnerRef} className="sm-toggle-textInner">
-              {textLines.map((l, i) => (
-                <span className="sm-toggle-line" key={i}>
-                  {l}
-                </span>
-              ))}
+      <header
+        className={`staggered-menu-header bg-background ${headerToneClass} transition-transform duration-300 ${showHeader ? 'translate-y-0' : '-translate-y-full'}`}
+        aria-label="Main navigation header"
+        style={{ willChange: 'transform' }}
+      >
+        <div className="flex items-center gap-4 px-4 w-full">
+          <div className={`flex-1 max-w-md ${searchToneClass}`}>
+            <Suspense fallback={null}>
+              <SearchInput forcePostsPage={true} />
+            </Suspense>
+          </div>
+          <button
+            ref={toggleBtnRef}
+            className={`sm-toggle md:text-3xl h-18 min-w-[3rem] flex items-end justify-end ml-auto mt-4 ${headerToneClass}`}
+            aria-label={open ? 'Close MENU' : 'Open MENU'}
+            aria-expanded={open}
+            aria-controls="staggered-menu-panel"
+            onClick={toggleMenu}
+            type="button"
+          >
+            <span ref={textWrapRef} className={`sm-toggle-textWrap ${headerToneClass}`} aria-hidden="true">
+              <span ref={textInnerRef} className="sm-toggle-textInner">
+                {textLines.map((l, i) => (
+                  <span className="sm-toggle-line" key={i}>
+                    {l}
+                  </span>
+                ))}
+              </span>
             </span>
-          </span>
-          <span ref={iconRef} className="sm-icon" aria-hidden="true">
-            <span ref={plusHRef} className="sm-icon-line scale-[1.7]" />
-            <span ref={plusVRef} className="sm-icon-line sm-icon-line-v scale-[1.7]" />
-          </span>
-        </button>
+            <span ref={iconRef} className="sm-icon" aria-hidden="true">
+              <span ref={plusHRef} className="sm-icon-line scale-[1.7]" />
+              <span ref={plusVRef} className="sm-icon-line sm-icon-line-v scale-[1.7]" />
+            </span>
+          </button>
+        </div>
       </header>
 
       <aside id="staggered-menu-panel" ref={panelRef} className="staggered-menu-panel" aria-hidden={!open}>
@@ -475,15 +500,45 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           </ul>
           {displaySocials && socialItems && socialItems.length > 0 && (
             <div className="sm-socials" aria-label="Social links">
-              <h3 className="sm-socials-title">Socials</h3>
-              <ul className="sm-socials-list" role="list">
-                {socialItems.map((s, i) => (
-                  <li key={s.label + i} className="sm-socials-item">
-                    <a href={s.link} target="_blank" rel="noopener noreferrer" className="sm-socials-link">
-                      {s.label}
-                    </a>
-                  </li>
-                ))}
+              <ul className="sm-socials-list flex-col items-start" role="list">
+                {socialItems.map((s, i) => {
+                  // Vérifie si le logo est une string non vide et commence par "/" ou "http"
+                  const isValidLogo =
+                    typeof s.logo === "string" &&
+                    s.logo.trim() !== "" &&
+                    (s.logo.startsWith("/") || s.logo.startsWith("http"));
+
+                  return (
+                    <li key={s.label + i} className="sm-socials-item">
+                      <a
+                        href={s.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="sm-socials-link"
+                      >
+                        {isValidLogo ? (
+                          <div className="mr-2 flex items-center">
+                          <Image
+                            src={s.logo as string}
+                            alt={s.label}
+                            className="object-contain mr-2 bg-white rounded-xl p-1"
+                            width={44}
+                            height={44}
+                            onError={(e) => {
+                              // Cache l'image si elle échoue à charger
+                              (e.currentTarget as HTMLImageElement).style.display = "none";
+                              // Optionnel : tu pourrais afficher le label ici via un état local si besoin
+                            }}
+                          />
+                          <span className="sm-socials-label text-white text-sm mr-2">{s.label}</span>
+                          </div>
+                        ) : (
+                          <span className="sm-socials-label text-white text-sm mr-2">{s.label}</span>
+                        )}
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}

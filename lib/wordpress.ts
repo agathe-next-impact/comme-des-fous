@@ -39,6 +39,7 @@ export async function getLatestStickyPost(): Promise<Post | undefined> {
 // Types are imported from `wp.d.ts`
 
 import querystring from "query-string";
+import { withCache } from "./cache";
 import type {
   Post,
   Category,
@@ -47,22 +48,19 @@ import type {
   Author,
   FeaturedMedia,
 } from "./wordpress.d";
+import type { Comment } from "./comments.d";
 
 // Single source of truth for WordPress configuration
+    export type { Post } from "./wordpress.d";
 // Simple in-memory cache for build-time API calls
 const tempCache: Record<string, any> = {};
 
 function getCacheKey(path: string, query?: Record<string, any>) {
   return path + (query ? `?${JSON.stringify(query)}` : "");
 }
-const baseUrl = process.env.WORDPRESS_URL;
+// Allow usage from both server (WORDPRESS_URL) and client (NEXT_PUBLIC_WORDPRESS_URL)
+const baseUrl = process.env.WORDPRESS_URL || process.env.NEXT_PUBLIC_WORDPRESS_URL;
 const isConfigured = Boolean(baseUrl);
-
-if (!isConfigured) {
-  console.warn(
-    "WORDPRESS_URL environment variable is not defined - WordPress features will be unavailable"
-  );
-}
 
 class WordPressAPIError extends Error {
   constructor(
@@ -88,31 +86,79 @@ export interface WordPressResponse<T> {
 
 const USER_AGENT = "Next.js WordPress Client";
 const CACHE_TTL = 3600; // 1 hour
+const MAX_RETRIES = 3;
+const INITIAL_BACKOFF_MS = 1000; // ⬆️ Augmenté de 500 à 1000ms
+const MAX_CONCURRENT_REQUESTS = 3; // Limite les requêtes simultanées
 
-// Core fetch - throws on error (for functions that require data)
+// Semaphore simple pour limiter la concurrence
+let activeRequests = 0;
+const requestQueue: (() => void)[] = [];
+
+async function withConcurrencyLimit<T>(fn: () => Promise<T>): Promise<T> {
+  while (activeRequests >= MAX_CONCURRENT_REQUESTS) {
+    await new Promise<void>(resolve => requestQueue.push(resolve));
+  }
+  activeRequests++;
+  try {
+    return await fn();
+  } finally {
+    activeRequests--;
+    const next = requestQueue.shift();
+    if (next) next();
+  }
+}
+
+// Core fetch with retry - throws on error after all retries exhausted
 async function wordpressFetch<T>(
   path: string,
   query?: Record<string, any>,
   tags: string[] = ["wordpress"]
 ): Promise<T> {
-  if (!baseUrl) {
-    throw new Error("WordPress URL not configured");
-  }
+  return withConcurrencyLimit(async () => {
+    if (!baseUrl) {
+      throw new Error("WordPress URL not configured");
+    }
 
-  const url = `${baseUrl}${path}${query ? `?${querystring.stringify(query)}` : ""}`;
-  const response = await fetch(url, {
-    headers: { "User-Agent": USER_AGENT },
-    next: { tags, revalidate: CACHE_TTL },
+    const url = `${baseUrl}${path}${query ? `?${querystring.stringify(query)}` : ""}`;
+    
+    let lastError: Error | null = null;
+    
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        const response = await fetch(url, {
+          headers: { "User-Agent": USER_AGENT },
+          next: { tags, revalidate: CACHE_TTL },
+        });
+        
+        if (!response.ok) {
+          throw new WordPressAPIError(
+            `WordPress API request failed: ${response.statusText}`,
+            response.status,
+            url
+          );
+        }
+        
+        return await response.json();
+      } catch (error) {
+        lastError = error as Error;
+        
+        // Ne pas retry pour les erreurs 4xx (sauf 429 rate limit)
+        if (error instanceof WordPressAPIError) {
+          if (error.status >= 400 && error.status < 500 && error.status !== 429) {
+            throw error;
+          }
+        }
+        
+        // Backoff exponentiel avant le prochain essai
+        if (attempt < MAX_RETRIES - 1) {
+          const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
+          await new Promise(r => setTimeout(r, delay));
+        }
+      }
+    }
+    
+    throw lastError || new Error(`WordPress fetch failed for ${path}`);
   });
-  if (!response.ok) {
-    throw new WordPressAPIError(
-      `WordPress API request failed: ${response.statusText}`,
-      response.status,
-      url
-    );
-  }
-  const json = await response.json();
-  return json;
 }
 
 // Graceful fetch - returns fallback when WordPress unavailable or on error
@@ -127,7 +173,6 @@ async function wordpressFetchGraceful<T>(
   try {
     return await wordpressFetch<T>(path, query, tags);
   } catch {
-    console.warn(`WordPress fetch failed for ${path}`);
     return fallback;
   }
 }
@@ -181,7 +226,6 @@ async function wordpressFetchPaginatedGraceful<T>(
   try {
     return await wordpressFetchPaginated<T[]>(path, query, tags);
   } catch {
-    console.warn(`WordPress paginated fetch failed for ${path}`);
     return emptyResponse;
   }
 }
@@ -233,6 +277,7 @@ export async function getPostsPaginated(
 /**
  * Fetches recent posts (up to 100). For paginated access use getPostsPaginated().
  * For fetching ALL posts (e.g., sitemap), use getAllPostsForSitemap().
+ * ✅ Optimisé : pagination pour éviter le dépassement du cache 2MB
  */
 export async function getRecentPosts(filterParams?: {
   author?: string;
@@ -240,25 +285,30 @@ export async function getRecentPosts(filterParams?: {
   category?: string;
   search?: string;
 }): Promise<Post[]> {
-  const query: Record<string, any> = {
+  const baseQuery: Record<string, any> = {
     _embed: true,
-    per_page: 100,
+    per_page: 25, // ⬇️ Réduit de 100 à 25 pour éviter >2MB
   };
 
-  if (filterParams?.search) query.search = filterParams.search;
-  if (filterParams?.author) query.author = filterParams.author;
-  if (filterParams?.tag) query.tags = filterParams.tag;
-  if (filterParams?.category) query.categories = filterParams.category;
+  if (filterParams?.search) baseQuery.search = filterParams.search;
+  if (filterParams?.author) baseQuery.author = filterParams.author;
+  if (filterParams?.tag) baseQuery.tags = filterParams.tag;
+  if (filterParams?.category) baseQuery.categories = filterParams.category;
 
-  return wordpressFetchGraceful<Post[]>("/wp-json/wp/v2/posts", [], query, [
-    "wordpress",
-    "posts",
+  // Récupérer les 4 premières pages (100 posts max) en parallèle
+  const pages = await Promise.all([
+    wordpressFetchGraceful<Post[]>("/wp-json/wp/v2/posts", [], { ...baseQuery, page: 1 }, ["wordpress", "posts"]),
+    wordpressFetchGraceful<Post[]>("/wp-json/wp/v2/posts", [], { ...baseQuery, page: 2 }, ["wordpress", "posts"]),
+    wordpressFetchGraceful<Post[]>("/wp-json/wp/v2/posts", [], { ...baseQuery, page: 3 }, ["wordpress", "posts"]),
+    wordpressFetchGraceful<Post[]>("/wp-json/wp/v2/posts", [], { ...baseQuery, page: 4 }, ["wordpress", "posts"]),
   ]);
+
+  return pages.flat();
 }
 
 export async function getPostById(id: number): Promise<Post> {
   try {
-    return await wordpressFetch<Post>(`/wp-json/wp/v2/posts/${id}`);
+    return await wordpressFetch<Post>(`/wp-json/wp/v2/posts/${id}`, { _embed: true });
   } catch (err: any) {
     if (err instanceof WordPressAPIError && err.status === 404) {
       return undefined as any;
@@ -271,7 +321,7 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
   const posts = await wordpressFetchGraceful<Post[]>(
     "/wp-json/wp/v2/posts",
     [],
-    { slug }
+    { slug, _embed: true }
   );
   return posts[0];
 }
@@ -286,17 +336,19 @@ export async function getAllCategories(): Promise<Category[]> {
 }
 
 export async function getCategoryById(id: number): Promise<Category> {
-  try {
-    return await wordpressFetch<Category>(`/wp-json/wp/v2/categories/${id}`);
-  } catch (err: any) {
-    if (
-      err instanceof WordPressAPIError &&
-      (err.status === 404 || err.status === 500)
-    ) {
-      return undefined as any;
+  return withCache(`category-${id}`, async () => {
+    try {
+      return await wordpressFetch<Category>(`/wp-json/wp/v2/categories/${id}`);
+    } catch (err: any) {
+      if (
+        err instanceof WordPressAPIError &&
+        (err.status === 404 || err.status === 500)
+      ) {
+        return undefined as any;
+      }
+      throw err;
     }
-    throw err;
-  }
+  });
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category> {
@@ -320,26 +372,38 @@ export async function getTagsByPost(postId: number): Promise<Tag[]> {
 }
 
 export async function getAllTags(): Promise<Tag[]> {
-  return wordpressFetchGraceful<Tag[]>(
-    "/wp-json/wp/v2/tags",
-    [],
-    { per_page: 100 },
-    ["wordpress", "tags"]
-  );
+  const allTags: Tag[] = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const response = await wordpressFetchPaginated<Tag[]>(
+      "/wp-json/wp/v2/tags",
+      { per_page: 100, page },
+      ["wordpress", "tags", `tags-page-${page}`]
+    );
+    allTags.push(...response.data);
+    hasMore = page < response.headers.totalPages;
+    page++;
+  }
+
+  return allTags;
 }
 
 export async function getTagById(id: number): Promise<Tag> {
-  try {
-    return await wordpressFetch<Tag>(`/wp-json/wp/v2/tags/${id}`);
-  } catch (err: any) {
-    if (
-      err instanceof WordPressAPIError &&
-      (err.status === 404 || err.status === 500)
-    ) {
-      return undefined as any;
+  return withCache(`tag-${id}`, async () => {
+    try {
+      return await wordpressFetch<Tag>(`/wp-json/wp/v2/tags/${id}`);
+    } catch (err: any) {
+      if (
+        err instanceof WordPressAPIError &&
+        (err.status === 404 || err.status === 500)
+      ) {
+        return undefined as any;
+      }
+      throw err;
     }
-    throw err;
-  }
+  });
 }
 
 export async function getTagBySlug(slug: string): Promise<Tag | undefined> {
@@ -363,7 +427,7 @@ export async function getAllPages(): Promise<Page[]> {
 
 export async function getPageById(id: number): Promise<Page> {
   try {
-    return await wordpressFetch<Page>(`/wp-json/wp/v2/pages/${id}`);
+    return await wordpressFetch<Page>(`/wp-json/wp/v2/pages/${id}`, { _embed: true });
   } catch (err: any) {
     if (err instanceof WordPressAPIError && err.status === 404) {
       return undefined as any;
@@ -376,7 +440,7 @@ export async function getPageBySlug(slug: string): Promise<Page | undefined> {
   const pages = await wordpressFetchGraceful<Page[]>(
     "/wp-json/wp/v2/pages",
     [],
-    { slug }
+    { slug, _embed: true }
   );
   return pages[0];
 }
@@ -391,33 +455,151 @@ export async function getAllAuthors(): Promise<Author[]> {
 }
 
 export async function getAuthorById(id: number): Promise<Author> {
-  try {
-    return await wordpressFetch<Author>(`/wp-json/wp/v2/users/${id}`);
-  } catch (err: any) {
-    if (
-      err instanceof WordPressAPIError &&
-      (err.status === 404 || err.status === 500)
-    ) {
-      // Return a fallback author object if not found or server error
-      return {
-        id,
-        name: "Unknown author",
-        url: "",
-        description: "",
-        link: "",
-        slug: "unknown",
-        avatar_urls: {},
-        meta: {},
-      };
+  return withCache(`author-${id}`, async () => {
+    try {
+      return await wordpressFetch<Author>(`/wp-json/wp/v2/users/${id}`);
+    } catch (err: any) {
+      if (
+        err instanceof WordPressAPIError &&
+        (err.status === 404 || err.status === 500)
+      ) {
+        // Return a fallback author object if not found or server error
+        return {
+          id,
+          name: "Unknown author",
+          url: "",
+          description: "",
+          link: "",
+          slug: "unknown",
+          avatar_urls: {},
+          meta: {},
+        };
+      }
+      throw err;
     }
-    throw err;
-  }
+  });
 }
 
 export async function getAuthorBySlug(slug: string): Promise<Author> {
   return wordpressFetch<Author[]>("/wp-json/wp/v2/users", { slug }).then(
     (users) => users[0]
   );
+}
+
+/**
+ * Crée un utilisateur WordPress ou retourne l'existant
+ */
+export async function createOrGetUser(
+  data: {
+    name: string;
+    email: string;
+  }
+): Promise<Author | null> {
+  if (!baseUrl) {
+    throw new Error("WordPress URL not configured");
+  }
+
+  const emailLower = data.email.toLowerCase();
+  
+  // Chercher si l'utilisateur existe déjà par email
+  try {
+    
+    // Essayer de récupérer tous les utilisateurs avec une recherche
+    // La plupart des WordPress supportent le paramètre search
+    const users = await wordpressFetch<any[]>("/wp-json/wp/v2/users", {
+      search: emailLower,
+      per_page: 100,
+    }).catch(() => []);
+    
+    
+    // Filtrer pour trouver l'utilisateur avec l'email exact
+    const existingUser = users.find(
+      (u: any) => u.email && u.email.toLowerCase() === emailLower
+    );
+    
+    if (existingUser) {
+      return existingUser;
+    }
+  } catch (error) {
+  }
+
+  // Créer un nouvel utilisateur si n'existe pas
+  const url = new URL("/wp-json/wp/v2/users", baseUrl);
+  
+  // Générer un username unique à partir de l'email (sans caractères spéciaux)
+  let username = data.email
+    .split("@")[0]
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "_");
+  
+  // Ajouter un timestamp pour garantir l'unicité en cas de doublons
+  const timestamp = Date.now().toString().slice(-6);
+  let finalUsername = username;
+  
+  const body = {
+    username: finalUsername,
+    email: emailLower,
+    name: data.name || data.email.split("@")[0],
+  };
+
+  try {
+
+    const response = await fetch(url.toString(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      let errorMessage = `Failed to create user (${response.status})`;
+      let errorCode = "";
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.message || errorData.error || errorMessage;
+        errorCode = errorData.code || "";
+      } catch (e) {
+      }
+      
+      // Si c'est un problème de username en double, essayer avec timestamp
+      if (errorCode === "existing_user_login" || errorMessage.includes("username")) {
+        body.username = `${username}_${timestamp}`;
+        
+        try {
+          const retryResponse = await fetch(url.toString(), {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "User-Agent": USER_AGENT,
+              "Accept": "application/json",
+            },
+            body: JSON.stringify(body),
+          });
+
+          if (!retryResponse.ok) {
+            return null;
+          }
+
+          const newUser = JSON.parse(await retryResponse.text());
+          return newUser;
+        } catch (retryError) {
+          return null;
+        }
+      }
+      
+      return null;
+    }
+
+    const newUser = JSON.parse(responseText);
+    return newUser;
+  } catch (error) {
+    return null;
+  }
 }
 
 export async function getPostsByAuthor(authorId: number): Promise<Post[]> {
@@ -531,7 +713,6 @@ export async function getAllPostSlugs(): Promise<{ slug: string }[]> {
 
     return allSlugs;
   } catch {
-    console.warn("WordPress unavailable, skipping static generation for posts");
     return [];
   }
 }
@@ -566,7 +747,6 @@ export async function getAllPostsForSitemap(): Promise<
 
     return allPosts;
   } catch {
-    console.warn("WordPress unavailable, skipping sitemap generation");
     return [];
   }
 }
@@ -632,26 +812,34 @@ function getMediaType(url: string): 'video' | 'podcast' | null {
 /**
  * Scrape la page publique WordPress pour récupérer les iframes vidéo et podcast
  * qui ne sont pas disponibles via l'API REST
+ * ✅ Optimisé avec timeout et cache
  */
 export async function scrapePostEmbeddedMedia(postUrl: string): Promise<{ src: string; title?: string; type?: 'video' | 'podcast' }[]> {
-  try {
-    const response = await fetch(postUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; NextJS/14)',
-      },
-      next: { revalidate: 3600 }
-    });
+  // Utiliser le cache pour éviter les appels répétés
+  return withCache(`scrape-${postUrl}`, async () => {
+    // ⬆️ Timeout augmenté de 5s à 10s pour éviter les timeouts pendant le build
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
 
-    if (!response.ok) return [];
+    try {
+      const response = await fetch(postUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; NextJS/14)',
+        },
+        next: { revalidate: 3600 },
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
 
-    const html = await response.text();
-    const media: { src: string; title?: string; type?: 'video' | 'podcast' }[] = [];
+      if (!response.ok) return [];
+
+      const html = await response.text();
+      const media: { src: string; title?: string; type?: 'video' | 'podcast' }[] = [];
 
     // Extract ALL iframes - universal approach
     const iframeRegex = /<iframe[^>]*>/gi;
     const iframes = html.match(iframeRegex) || [];
     
-    console.log(`[Scrape] Found ${iframes.length} iframes in ${postUrl}`);
 
     for (const iframe of iframes) {
       // Extract src attribute
@@ -692,7 +880,6 @@ export async function scrapePostEmbeddedMedia(postUrl: string): Promise<{ src: s
         is404 = true;
       }
       if (is404) {
-        console.log(`[Scrape] Ignored iframe (404): ${src}`);
         continue;
       }
 
@@ -712,7 +899,6 @@ export async function scrapePostEmbeddedMedia(postUrl: string): Promise<{ src: s
 
       // Avoid duplicates
       if (!media.some(m => m.src === src)) {
-        console.log(`[Scrape] Found iframe: ${src} (${type})`);
         media.push({ src, title, type });
       }
     }
@@ -745,10 +931,98 @@ export async function scrapePostEmbeddedMedia(postUrl: string): Promise<{ src: s
     }
 
     return media;
+    } catch (error: any) {
+      clearTimeout(timeout);
+      if (error.name === 'AbortError') {
+      } else {
+      }
+      return [];
+    }
+  });
+}
+
+/**
+ * Récupère les commentaires approuvés d'un article
+ */
+export async function getPostComments(postId: number): Promise<Comment[]> {
+  return wordpressFetchGraceful<Comment[]>(
+    "/wp-json/wp/v2/comments",
+    [],
+    {
+      post: postId,
+      status: "approve",
+      per_page: 100,
+      orderby: "date",
+      order: "asc",
+    },
+    ["wordpress", `post-${postId}`, "comments"]
+  );
+}
+
+/**
+ * Crée un commentaire pour un article
+ */
+export async function createPostComment(
+  postId: number,
+  data: {
+    author_name: string;
+    author_email: string;
+    content: string;
+  }
+): Promise<Comment> {
+  if (!baseUrl) {
+    throw new Error("WordPress URL not configured");
+  }
+
+  const url = new URL("/wp-json/wp/v2/comments", baseUrl);
+  
+  // Paramètres du commentaire
+  const body: any = {
+    post: postId,
+    content: data.content,
+  };
+
+  // Toujours utiliser les informations saisies, sans création/association d'utilisateur
+  body.author_name = data.author_name;
+  body.author_email = data.author_email;
+
+  try {
+
+    const response = await fetch(url.toString(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      let errorMessage = `Failed to create comment (${response.status})`;
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        errorMessage = responseText || errorMessage;
+      }
+      throw new WordPressAPIError(
+        errorMessage,
+        response.status,
+        url.toString()
+      );
+    }
+
+    return JSON.parse(responseText);
   } catch (error) {
-    console.error(`[Scrape] Error scraping ${postUrl}:`, error);
-    return [];
+    if (error instanceof WordPressAPIError) {
+      throw error;
+    }
+    throw new Error(`Failed to create comment: ${error}`);
   }
 }
 
 export { WordPressAPIError };
+

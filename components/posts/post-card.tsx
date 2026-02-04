@@ -8,6 +8,7 @@ import { Post } from "@/lib/wordpress.d";
 import { DecodeFr } from "@/components/decode-fr";
 import { cn } from "@/lib/utils";
 import { truncateHtml } from "@/lib/metadata";
+import { isYoutubeUrl, isPodcastUrl, PODCAST_PLATFORMS } from "@/lib/media-utils";
 
 interface ScrapedMedia {
   src: string;
@@ -15,54 +16,53 @@ interface ScrapedMedia {
   type?: "video" | "podcast";
 }
 
-// Podcast platforms detection
-const PODCAST_PLATFORMS = [
-  "spotify.com",
-  "open.spotify.com",
-  "soundcloud.com",
-  "podcasts.apple.com",
-  "anchor.fm",
-  "podbean.com",
-  "acast.com",
-  "deezer.com",
-  "ausha.co",
-  "audioboom.com",
-  "megaphone.fm",
-  "simplecast.com",
-  "buzzsprout.com",
-  "spreaker.com",
-  "castbox.fm",
-  "player.fm",
-  "stitcher.com",
-  "podcloud.fr",
-  "mixcloud.com",
-];
+// const PODCAST_PLATFORMS = [
+//   "spotify.com",
+//   "open.spotify.com",
+//   "soundcloud.com",
+//   "podcasts.apple.com",
+//   "anchor.fm",
+//   "podbean.com",
+//   "acast.com",
+//   "deezer.com",
+//   "ausha.co",
+//   "audioboom.com",
+//   "megaphone.fm",
+//   "simplecast.com",
+//   "buzzsprout.com",
+//   "spreaker.com",
+//   "castbox.fm",
+//   "player.fm",
+//   "stitcher.com",
+//   "podcloud.fr",
+//   "mixcloud.com",
+// ];
 
-const isPodcastUrl = (url: string) => {
-  const lower = url.toLowerCase();
-  // Mixcloud: match all widget/iframe embeds and all mixcloud.com subdomains
-  if (lower.includes("mixcloud.com/widget/iframe")) return true;
-  if (/https?:\/\/(www\.)?mixcloud\.com\//.test(lower)) return true;
-  return PODCAST_PLATFORMS.some((p) => lower.includes(p));
-};
-const isYoutubeUrl = (url: string) =>
-  url.includes("youtube.com") || url.includes("youtu.be");
-const getMediaType = (url: string): "video" | "podcast" | null => {
-  const lowerUrl = url.toLowerCase();
-  if (
-    ["youtube.com", "youtu.be", "vimeo.com", "dailymotion.com"].some((p) =>
-      lowerUrl.includes(p)
-    )
-  )
-    return "video";
-  if (
-    PODCAST_PLATFORMS.some((p) => lowerUrl.includes(p)) ||
-    lowerUrl.includes("soundcloud.com") ||
-    lowerUrl.includes("www.soundcloud.com")
-  )
-    return "podcast";
-  return null;
-};
+// const isPodcastUrl = (url: string) => {
+//   const lower = url.toLowerCase();
+//   // Mixcloud: match all widget/iframe embeds and all mixcloud.com subdomains
+//   if (lower.includes("mixcloud.com/widget/iframe")) return true;
+//   if (/https?:\/\/(www\.)?mixcloud\.com\//.test(lower)) return true;
+//   return PODCAST_PLATFORMS.some((p) => lower.includes(p));
+// };
+// const isYoutubeUrl = (url: string) =>
+//   url.includes("youtube.com") || url.includes("youtu.be");
+// const getMediaType = (url: string): "video" | "podcast" | null => {
+//   const lowerUrl = url.toLowerCase();
+//   if (
+//     ["youtube.com", "youtu.be", "vimeo.com", "dailymotion.com"].some((p) =>
+//       lowerUrl.includes(p)
+//     )
+//   )
+//     return "video";
+//   if (
+//     PODCAST_PLATFORMS.some((p) => lowerUrl.includes(p)) ||
+//     lowerUrl.includes("soundcloud.com") ||
+//     lowerUrl.includes("www.soundcloud.com")
+//   )
+//     return "podcast";
+//   return null;
+// };
 
 export function PostCard({
   post,
@@ -158,13 +158,9 @@ export function PostCard({
         }
       }
     } catch (error) {
-      console.error("Failed to scrape media:", error);
     }
   };
 
-  // Generate random color for posts without media
-  const colors = ["yellow", "red", "blue"];
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
   // Helper for iframe error handling
   const handleIframeError = () => setIframeError(true);
@@ -174,7 +170,7 @@ export function PostCard({
       href={`/posts/${post.slug}`}
       className={cn(
         "relative p-6 group flex justify-between flex-col not-prose gap-8",
-        "border-r border-b border-white/20",
+        "border border-white/20",
         "hover:bg-white/5 transition-all duration-300",
         "before:absolute before:top-0 before:left-0 before:w-3 before:h-3",
         "before:border-t-2 before:border-l-2 before:border-yellow-500",
@@ -237,43 +233,51 @@ export function PostCard({
               onError={() => setImageError(true)}
             />
           ) : (
-            <div
-              className="absolute inset-0 w-full h-full widget-404"
-              style={{ backgroundColor: randomColor }}
+            <Image
+              className="absolute inset-0 w-full h-full object-contain p-4 bg-white"
+              src="/logo.png"
+              alt={post.title?.rendered || "Logo"}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={() => setImageError(true)}
             />
           )}
         </div>
-        <h3 className="text-2xl font-medium">
+        <h3 className="text-2xl font-title font-normal leading-snug letter-spacing-widest group-hover:underline">
           <DecodeFr>{post.title.rendered}</DecodeFr>
         </h3>
         <div
           className="text-sm"
-          style={{ fontFamily: "Host Grotesk, sans-serif" }}
         >
           {post.excerpt?.rendered ? (
-            <DecodeFr>{truncateHtml(post.excerpt.rendered, 12)}</DecodeFr>
+            <DecodeFr>{truncateHtml(post.excerpt.rendered, 32)}</DecodeFr>
           ) : (
-            "No excerpt available"
+            ""
           )}
         </div>
       </div>
 
       <div className="flex flex-col gap-4 border-t border-t-white/30 pt-4">
         <div className="flex justify-between items-center text-sm">
-          <p className="text-(--color-red) px-2 py-1 rounded-full hover:text-white hover:bg-(--color-red) border border-(--color-red) transition-colors">
-            <DecodeFr>{category?.name || "Uncategorized"}</DecodeFr>
-          </p>
-          <p className="text-sm">{author} - {date}</p>
+          {category && category.name && (
+            <Link
+              href={`/${category.slug}`}
+              className="text-(--color-red) px-2 py-1 hover:text-white hover:bg-(--color-red) border border-(--color-red) transition-colors"
+            >
+              <DecodeFr>{category.name || "Uncategorized"}</DecodeFr>
+            </Link>
+          )}
         </div>
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {tags.slice(0, 3).map((tag: any) => (
-              <span
+              <Link
                 key={tag.id}
-                className="text-sm text-(--color-blue) px-2 pt-0.5 pb-1 rounded-full hover:text-white border border-(--color-blue) hover:bg-(--color-blue) transition-colors"
+                href={`/posts/tags/${tag.slug}`}
+                className="text-sm text-(--color-blue) px-2 pt-0.5 pb-1 hover:text-white border border-(--color-blue) hover:bg-(--color-blue) transition-colors"
               >
                 <DecodeFr>{tag.name}</DecodeFr>
-              </span>
+              </Link>
             ))}
           </div>
         )}
@@ -281,3 +285,5 @@ export function PostCard({
     </Link>
   );
 }
+
+// export { isYoutubeUrl };
