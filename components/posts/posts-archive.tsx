@@ -35,7 +35,7 @@ export async function PostsArchive({
   author,
   search,
   page = 1,
-  postsPerPage = 9,
+  postsPerPage = 8,
   emptyMessage = "Pas d'articles disponibles pour le moment.",
   baseUrl = "/posts",
 }: PostsArchiveProps) {
@@ -77,17 +77,22 @@ export async function PostsArchive({
     );
   }
 
+  // Hide filters for specific pages
+  const shouldShowFilters = !['a-lire', 'a-ecouter', 'a-voir'].some(page => baseUrl.includes(page));
+
   return (
     <div className="space-y-8">
-      <FilterPosts
-        authors={authors}
-        tags={tags}
-        categories={categories}
-        initialAuthor={author}
-        initialTag={tag}
-        initialCategory={category}
-        initialSearch={search}
-      />
+      {shouldShowFilters && (
+        <FilterPosts
+          authors={authors}
+          tags={tags}
+          categories={categories}
+          initialAuthor={author}
+          initialTag={tag}
+          initialCategory={category}
+          initialSearch={search}
+        />
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 border-l border-t border-white/20">
         {posts.map((post, index) => (
           <PostCard key={post.id} post={post} index={index} />

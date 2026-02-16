@@ -1,13 +1,14 @@
 import Hero from "@/components/hero";
 import { Section, Container } from "@/components/craft";
 import type { Metadata } from "next";
+import { decodeHtmlEntities } from '@/lib/metadata';
 import { PostsArchive } from "@/components/posts/posts-archive";
 import { getCategoryBySlug } from "@/lib/wordpress";
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "À LIRE",
+  title: decodeHtmlEntities("À LIRE"),
   description: "Sélection d'articles, livres et documents à ne pas manquer",
   alternates: {
     canonical: "/posts/categories/a-lire",
@@ -26,14 +27,15 @@ export default async function ALireCategoryPage({
   const category = await getCategoryBySlug("a-lire");
   
   return (
-    <Section>
-      <Container className="bg-(--color-red)">
+    <>
+      <div className="bg-(--color-red) mt-4">
         <Hero
           titre="À LIRE"
           sousTitre="Sélection d'articles, livres et documents à ne pas manquer"
           className="text-black"
         />
-      </Container>
+      </div>
+    <Section>
       <Container className="mt-8">
         <PostsArchive 
           category={category?.id ? String(category.id) : undefined}
@@ -43,5 +45,6 @@ export default async function ALireCategoryPage({
         />
       </Container>
     </Section>
+    </>
   );
 }

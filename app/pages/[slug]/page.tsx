@@ -1,12 +1,25 @@
-import { getPageBySlug, getAllPages } from "@/lib/wordpress";
-import { generateContentMetadata, stripHtml } from "@/lib/metadata";
+import {
+  getPageBySlug,
+  getAllPages,
+} from "@/lib/wordpress";
+import { generateContentMetadata, stripHtml, decodeHtmlEntities } from "@/lib/metadata";
 import { Section, Container, Prose } from "@/components/craft";
-import { notFound } from "next/navigation";
-
+import Image from "next/image";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
+import Hero from "@/components/hero";
+import PageContent from "@/components/pages/page-content";
 
-// Revalidate pages every hour
-export const revalidate = 3600;
+// Define the PageWithEmbedded type if not already imported
+type PageWithEmbedded = Awaited<ReturnType<typeof getPageBySlug>> & {
+  _embedded?: {
+    "wp:featuredmedia"?: Array<any>;
+  };
+  featured_media?: number;
+};
+
+
+
 
 export async function generateStaticParams() {
   const pages = await getAllPages();
@@ -31,12 +44,12 @@ export async function generateMetadata({
   const description = page.excerpt?.rendered
     ? stripHtml(page.excerpt.rendered)
     : stripHtml(page.content.rendered).slice(0, 200) + "...";
-
   return generateContentMetadata({
-    title: page.title.rendered,
+    title: decodeHtmlEntities(page.title.rendered),
     description,
     slug: page.slug,
     basePath: "pages",
+    content: page, // ✅ Passer le contenu complet pour extraction de l'image
   });
 }
 
@@ -46,20 +59,27 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const page = await getPageBySlug(slug);
+  const page = await getPageBySlug(slug) as PageWithEmbedded;
 
   if (!page) {
     notFound();
   }
 
+  // Featured media if available
+  const featuredMedia = page.featured_media
+    ? page._embedded?.["wp:featuredmedia"]?.[0]
+    : null;
+
   return (
-    <Section>
-      <Container>
-        <Prose>
-          <h2>{page.title.rendered}</h2>
-          <div dangerouslySetInnerHTML={{ __html: page.content.rendered }} />
-        </Prose>
-      </Container>
-    </Section>
+    <div className="mt-14">
+      <Hero
+        titre={decodeHtmlEntities(page.title.rendered)}
+        sousTitre=""
+      />
+
+
+        <PageContent page={page} />
+
+    </div>
   );
 }
