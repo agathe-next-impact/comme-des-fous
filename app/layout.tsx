@@ -71,6 +71,7 @@ const menuItems = [
   { label: "On aime", ariaLabel: "Coups de coeur", link: "/coups-de-coeur" },
   { label: "BDthèque", ariaLabel: "BDthèque", link: "/bedetheque" },
   { label: "Playlist", ariaLabel: "Playlist", link: "/playlist-musicale-de-fous" },
+  { label: "Jeux", ariaLabel: "Jeux", link: "https://jeux.commedesfous.com" },
 ];
 
 const socialItems = [
